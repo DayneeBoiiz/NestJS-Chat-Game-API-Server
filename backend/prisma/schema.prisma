@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// generator erd {
+//   provider = "prisma-erd-generator"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email    String @unique
+  nickname String @unique
+
+  hash      String
+  firstname String
+  lastname  String
+
+  TwofaAutSecret  String?
+  TwofaAutEnabled Boolean? @default(false)
+
+  avatarUrl String?
+
+  room      Room[]
+  roomOwner Room[] @relation("roomOwner")
+  opedroom  Room[] @relation("AdminRooms")
+
+  SentMessage     Message[] @relation("sender")
+  recievedMessage Message[] @relation("reciever")
+
+  sentFriendRequests     FriendRequest[] @relation("SentFriendRequest")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequest")
+
+  sentFriends     Friend[] @relation("sentFriends")
+  receivedFriends Friend[] @relation("receivedFriends")
+
+  blockedUsers   BlockedUser[] @relation("userBlockedUsers")
+  usersBlockedBy BlockedUser[] @relation("blockedUserBlockedUsers")
+}
+
+model Room {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  isPrivate Boolean
+  password  String?
+
+  admins User[] @relation("AdminRooms")
+
+  owner   User @relation(name: "roomOwner", fields: [ownerID], references: [id])
+  ownerID Int  @unique
+
+  user    User[]
+  message Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content String
+
+  room   Room @relation(fields: [roomID], references: [id])
+  roomID Int
+
+  sender   User @relation(name: "sender", fields: [senderID], references: [id])
+  senderID Int
+
+  reciever   User? @relation(name: "reciever", fields: [recieverID], references: [id])
+  recieverID Int?
+}
+
+model FriendRequest {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sender   User @relation("SentFriendRequest", fields: [senderID], references: [id])
+  senderID Int
+
+  recipient   User @relation("ReceivedFriendRequest", fields: [recipientID], references: [id])
+  recipientID Int
+}
+
+model Friend {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sentBy   User @relation("sentFriends", fields: [sentByID], references: [id])
+  sentByID Int
+
+  receivedBy   User @relation("receivedFriends", fields: [receivedByID], references: [id])
+  receivedByID Int
+
+  // isBlocked Boolean @default(false)
+}
+
+model BlockedUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation("userBlockedUsers", fields: [userID], references: [id])
+  userID Int  @unique
+
+  blockedUser   User @relation("blockedUserBlockedUsers", fields: [blockedUserID], references: [id])
+  blockedUserID Int  @unique
+}
+
