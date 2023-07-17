@@ -69,11 +69,11 @@ export class UsersController {
   ) {
     try {
       console.log(data.userName);
-      await this.userService.handleRejectFriendRequest(
+      return await this.userService.handleRejectFriendRequest(
         data.userID,
         data.userName,
       );
-      return { message: 'Friend request rejected' };
+      // return { message: 'Friend request rejected' };
     } catch (error) {
       console.log(error);
       throw new Error('Failed to reject friend request');

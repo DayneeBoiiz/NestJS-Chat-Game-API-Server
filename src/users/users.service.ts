@@ -23,15 +23,27 @@ export class UsersService {
 
   async handleRemoveFriend(userName: string, reqUserID: number) {
     try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: reqUserID,
+        },
+      });
+
       const friend = await this.prisma.user.findUnique({
         where: {
           nickname: userName,
         },
       });
 
+      // console.log(user, friend);
+
+      // if (user.id === friend.id) {
+      //   throw new Error('Cannot remove yourself');
+      // }
+
       const firstFriendship = await this.prisma.friend.findFirst({
         where: {
-          sentByID: reqUserID,
+          sentByID: user.id,
         },
       });
 
@@ -49,6 +61,9 @@ export class UsersService {
         throw new Error('Friendship not found');
       }
 
+      console.log(firstFriendship);
+      console.log(secondFriendship);
+
       await this.prisma.friend.delete({
         where: {
           id: firstFriendship.id,
@@ -64,7 +79,7 @@ export class UsersService {
       return { message: 'Friend removed' };
     } catch (error) {
       console.log(error);
-      throw new Error('Failed to remove friend');
+      // throw new Error('Failed to remove friend');
     }
   }
 

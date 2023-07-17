@@ -39,6 +39,7 @@ Authorization: {{token}}
 ### ------------------------------- VERIFY 2FA ----------------------------
 POST {{hostname}/2fa/verify}
 Authorization: {{token}}
+Content-Type: application/json
 
 {
     "code": "369083"
@@ -63,8 +64,88 @@ return {{true/false}}
 ### ------------------------------- CREATE ROOM ---------------------------
 POST {{hostname}/chat/createroom}
 Authorization: {{token}}
+Content-Type: application/json
 
 {
     "roomName": "DayneeBoiiz"
 }
+#--------------------------------------------------------------------------
+
+### ------------------------------- SET ADMIN -----------------------------
+POST {{hostname}/chat/setadmin}
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "roomId": 1,
+    "userId": 2
+}
+#--------------------------------------------------------------------------
+
+### ------------------------------- 42 LOGIN ------------------------------
+GET {{hostname}/auth/42/login}
+#--------------------------------------------------------------------------
+
+### ------------------------------- GET ALL USERS -------------------------
+GET {{hostname}/users/all-users}
+Authorization: {{token}}
+
+return : 
+[
+    {
+        "id": 1,
+        "createdAt": "2023-07-17T11:30:41.413Z",
+        "updatedAt": "2023-07-17T11:50:59.441Z",
+        "email": "saad.ayar@hotmail.com",
+        "nickname": "DayneeBoiiz",
+        "firstname": "Saad",
+        "lastname": "Ayar",
+        "TwofaAutEnabled": true,
+        "avatarUrl": null
+    },
+    {
+        "id": 2,
+        "createdAt": "2023-07-17T11:59:48.390Z",
+        "updatedAt": "2023-07-17T11:59:48.390Z",
+        "email": "saad.ayar@hotmail.co",
+        "nickname": "FixGree",
+        "firstname": "Saad",
+        "lastname": "Ayar",
+        "TwofaAutEnabled": false,
+        "avatarUrl": null
+    },
+    {
+        "id": 3,
+        "createdAt": "2023-07-17T12:35:25.323Z",
+        "updatedAt": "2023-07-17T12:35:25.323Z",
+        "email": "sayar@student.1337.ma",
+        "nickname": "sayar",
+        "firstname": "Saad",
+        "lastname": "Ayar",
+        "TwofaAutEnabled": false,
+        "avatarUrl": null
+    }
+]
+#--------------------------------------------------------------------------
+
+### ------------------------------- SEND FRIEND REQUEST -------------------
+POST {{hostname/users/{username}/send-friend-request}}
+Authorization: {{token}}
+Content-Type: application/json
+Params: {username}
+
+{
+    "recipientUserName": "FixGree"
+}
+#--------------------------------------------------------------------------
+
+### ------------------------------- ACCEPT FRIEND REQUEST -----------------
+POST {{hostname}/{senderusername}/friend-request/{receiverusername}/accept}
+Authorization: {{token}}
+#--------------------------------------------------------------------------
+
+### ------------------------------- REMOVE FRIEND REQUEST -----------------
+DELETE {{hostname}/users/{username}}
+Authorization: {{token}}
+Param: {username}
 #--------------------------------------------------------------------------
