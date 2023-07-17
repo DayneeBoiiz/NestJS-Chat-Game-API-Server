@@ -24,6 +24,8 @@ export class ChatController {
       await this.chatService.extractUserIdFromHeader(req),
       10,
     );
+
+    console.log(data.roomId, data.userId);
     await this.chatService.handleSetAdmin(
       data.roomId,
       data.userId,
