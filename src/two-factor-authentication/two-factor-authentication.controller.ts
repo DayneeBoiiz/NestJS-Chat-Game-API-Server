@@ -7,6 +7,7 @@ import {
   Req,
   Res,
   Body,
+  Get,
 } from '@nestjs/common';
 import { TwoFactorAuthenticationService } from './two-factor-authentication.service';
 import { JwtGuard } from 'src/auth/guard';
@@ -27,7 +28,7 @@ export class TwoFactorAuthenticationController {
   @Post('Generate')
   @UseGuards(JwtGuard)
   async register(@Req() req: Request, @Res() res: Response) {
-    console.log(req.user);
+    // console.log(req.user);
     // console.log(res);
     const { otpauthUrl } =
       await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
@@ -39,7 +40,7 @@ export class TwoFactorAuthenticationController {
 
   @Post('verify')
   @UseGuards(JwtGuard)
-  async verify2FA(@Body() { code }, @Req() req) {
+  async verify2FA(@Body() code, @Req() req) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: req.user.id,
@@ -51,9 +52,9 @@ export class TwoFactorAuthenticationController {
     const verified = speakeasy.totp.verify({
       secret,
       encoding: 'base32',
-      token: code,
+      token: code.code,
     });
-    // console.log(verified);
+
     return verified;
     // console.log(code);
     // console.log(secret);
@@ -62,7 +63,6 @@ export class TwoFactorAuthenticationController {
   @Post('change')
   @UseGuards(JwtGuard)
   async change(@Req() req) {
-    console.log(req.user.TwofaAutEnabled);
     if (req.user.TwofaAutEnabled === true) {
       await this.prisma.user.update({
         where: {
@@ -84,5 +84,17 @@ export class TwoFactorAuthenticationController {
       });
     }
     // console.log(req);
+  }
+
+  @Get('status')
+  @UseGuards(JwtGuard)
+  async get2faStatus(@Req() req) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: req.user.id,
+      },
+    });
+
+    return user.TwofaAutEnabled;
   }
 }
