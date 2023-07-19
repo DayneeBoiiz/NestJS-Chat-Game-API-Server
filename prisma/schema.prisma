@@ -27,7 +27,7 @@ model User {
   TwofaAutSecret  String?
   TwofaAutEnabled Boolean? @default(false)
 
-  avatarUrl String?
+  avatarUrl String? @default("./src/users/avatar/default_avatar.png")
 
   room      Room[]
   roomOwner Room[] @relation("roomOwner")
@@ -103,8 +103,6 @@ model Friend {
 
   receivedBy   User @relation("receivedFriends", fields: [receivedByID], references: [id])
   receivedByID Int
-
-  // isBlocked Boolean @default(false)
 }
 
 model BlockedUser {

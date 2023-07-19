@@ -1,8 +1,7 @@
 export type UserDetails = {
   email: string;
   login: string;
-  firstname: string;
-  lastname: string;
+  avatrURL: string;
 };
 
 export interface Request {
