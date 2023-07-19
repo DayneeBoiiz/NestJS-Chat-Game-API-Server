@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class AuthDtoRegister {
   @IsEmail()
@@ -7,15 +13,13 @@ export class AuthDtoRegister {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(6, {
+    message: 'Username is too short. Minimum length is 6 characters.',
+  })
+  @MaxLength(20, {
+    message: 'Username is too long. Maximum length is 20 characters.',
+  })
   password: string;
-
-  @IsString()
-  @IsNotEmpty()
-  firstname: string;
-
-  @IsString()
-  @IsNotEmpty()
-  lastname: string;
 
   @IsString()
   @IsNotEmpty()

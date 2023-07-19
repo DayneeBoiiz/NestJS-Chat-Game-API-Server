@@ -41,8 +41,6 @@ export class AuthService {
         data: {
           email: details.email,
           nickname: details.login,
-          firstname: details.firstname,
-          lastname: details.lastname,
           hash: '',
         },
       });
@@ -63,8 +61,6 @@ export class AuthService {
           email: dto.email,
           hash: hash,
           nickname: dto.nickname,
-          firstname: dto.firstname,
-          lastname: dto.lastname,
         },
       });
       return this.signToken(user.id, user.email);
