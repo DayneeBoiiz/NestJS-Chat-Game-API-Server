@@ -308,8 +308,6 @@ export class UsersService {
         id: true,
         email: true,
         nickname: true,
-        firstname: true,
-        lastname: true,
       },
     });
 

@@ -23,8 +23,6 @@ model User {
   nickname String @unique
 
   hash      String
-  firstname String
-  lastname  String
 
   TwofaAutSecret  String?
   TwofaAutEnabled Boolean? @default(false)
