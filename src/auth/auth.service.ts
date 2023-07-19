@@ -41,6 +41,7 @@ export class AuthService {
         data: {
           email: details.email,
           nickname: details.login,
+          avatarUrl: details.avatrURL,
           hash: '',
         },
       });

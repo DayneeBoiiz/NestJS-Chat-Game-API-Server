@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -37,9 +37,12 @@ export class UsersService {
 
       // console.log(user, friend);
 
-      // if (user.id === friend.id) {
-      //   throw new Error('Cannot remove yourself');
-      // }
+      if (user.id === friend.id) {
+        throw new Error('Cannot remove yourself');
+      }
+
+      console.log(user.id);
+      console.log(friend.id);
 
       const firstFriendship = await this.prisma.friend.findFirst({
         where: {
@@ -53,16 +56,13 @@ export class UsersService {
 
       const secondFriendship = await this.prisma.friend.findFirst({
         where: {
-          receivedByID: friend.id,
+          sentByID: friend.id,
         },
       });
 
       if (!secondFriendship) {
         throw new Error('Friendship not found');
       }
-
-      console.log(firstFriendship);
-      console.log(secondFriendship);
 
       await this.prisma.friend.delete({
         where: {
@@ -383,10 +383,7 @@ export class UsersService {
               receivedBy: {
                 select: {
                   id: true,
-                  // email: true,
                   nickname: true,
-                  // createdAt: true,
-                  // updatedAt: true,
                 },
               },
             },
