@@ -1,10 +1,19 @@
 import { Injectable, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as fs from 'fs';
+import path from 'path';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private config: ConfigService,
+  ) {}
 
   async handleGetAllUsers() {
     const users = await this.prisma.user.findMany();
@@ -455,6 +464,58 @@ export class UsersService {
     } catch (error) {
       console.log(error);
       throw new Error('Failed to block user');
+    }
+  }
+
+  async updateAvatar(avatar: Express.Multer.File, user: User) {
+    const find_user = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+    });
+    //delete the old avatar if there is a one other than the default
+    if (find_user.avatarUrl != 'default_avatar.png') {
+      fs.unlinkSync('src/users/avatars/' + find_user.avatarUrl);
+    }
+    //give the new avatar a name (username + id + .ext)
+    const file_ext = avatar.originalname.split('.')[1]; //the ext of the new avatar file
+    const filename = `${find_user.nickname}${find_user.id}.${file_ext}`;
+    //rename the new avatar file
+    fs.renameSync(avatar.path, 'src/users/avatars/' + filename);
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        avatarUrl: filename,
+      },
+    });
+  }
+
+  async getAvatar(user: User, res: Response) {
+    const find_user = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+    });
+
+    //if the user has the default avatar
+    if (find_user.avatarUrl === 'default_avatar.png') {
+      const absolutePath = path.join(
+        __dirname,
+        this.config.get('DEFAULT_AVATAR_PATH'),
+        user.avatarUrl,
+      );
+      return res.sendFile(absolutePath);
+    }
+    //if the user has a custom avatar
+    else {
+      const absolutePath = path.join(
+        __dirname,
+        this.config.get('AVATAR_PATH'),
+        user.avatarUrl,
+      );
+      return res.sendFile(absolutePath);
     }
   }
 }

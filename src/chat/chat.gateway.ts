@@ -7,7 +7,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-// import { JwtGuard } from 'src/auth/guard';
 import { ChatService } from './chat.service';
 
 @WebSocketGateway()
@@ -60,9 +59,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.userID,
       this.server,
     );
-
-    // console.log(data.roomId);
-    // console.log(data.message);
   }
 
   @SubscribeMessage('sendDirectMessage')

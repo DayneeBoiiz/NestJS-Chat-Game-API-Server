@@ -7,15 +7,57 @@ import {
   Delete,
   Req,
   Get,
+  Patch,
+  
+  UseInterceptors,
+  BadRequestException,
+  UploadedFile,
+  Res,
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guard';
 import { UsersService } from './users.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { GetUser } from 'src/auth/decorator/getUser.decorator';
+import { User } from '@prisma/client';
 
 @UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(private userService: UsersService) {}
+
+  @Patch('/upload/avatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      dest: './src/users//avatars',
+      limits: {
+        fileSize: 1024 * 1024 * 4,
+      },
+      fileFilter: (req, file, callback) => {
+        const allowedExtensions = /\.(jpg|jpeg|png)$/;
+        if (!allowedExtensions.test(file.originalname)) {
+          callback(
+            new BadRequestException('Only JPEG/JPG and PNG files are allowed.'),
+            false,
+          );
+        } else {
+          callback(null, true);
+        }
+      },
+    }),
+  )
+  updateAvatar(
+    @UploadedFile() avatar: Express.Multer.File,
+    @GetUser() user: User,
+  ) {
+    this.userService.updateAvatar(avatar, user);
+  }
+
+  @Get('my-avatar')
+  @UseGuards(JwtGuard)
+  getAvatar(@GetUser() user: User, @Res() res: Response) {
+    return this.userService.getAvatar(user, res);
+  }
 
   @Get('all-users')
   async handleGetAllUsers() {
