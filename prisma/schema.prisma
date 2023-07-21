@@ -27,7 +27,7 @@ model User {
   TwofaAutSecret  String?
   TwofaAutEnabled Boolean? @default(false)
 
-  avatarUrl String? @default("./src/users/avatar/default_avatar.png")
+  avatarUrl String? @default("default_avatar.png")
 
   room      Room[]
   roomOwner Room[] @relation("roomOwner")
