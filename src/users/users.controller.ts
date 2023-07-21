@@ -29,7 +29,7 @@ export class UsersController {
   @Patch('/upload/avatar')
   @UseInterceptors(
     FileInterceptor('avatar', {
-      dest: './src/users//avatars',
+      dest: './src/avatars/uploads',
       limits: {
         fileSize: 1024 * 1024 * 4,
       },

@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as fs from 'fs';
-import path from 'path';
+import * as path from 'path';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
@@ -475,13 +475,13 @@ export class UsersService {
     });
     //delete the old avatar if there is a one other than the default
     if (find_user.avatarUrl != 'default_avatar.png') {
-      fs.unlinkSync('src/users/avatars/' + find_user.avatarUrl);
+      fs.unlinkSync('src/avatars/uploads/' + find_user.avatarUrl);
     }
     //give the new avatar a name (username + id + .ext)
     const file_ext = avatar.originalname.split('.')[1]; //the ext of the new avatar file
     const filename = `${find_user.nickname}${find_user.id}.${file_ext}`;
     //rename the new avatar file
-    fs.renameSync(avatar.path, 'src/users/avatars/' + filename);
+    fs.renameSync(avatar.path, 'src/avatars/uploads/' + filename);
     await this.prisma.user.update({
       where: {
         id: user.id,
@@ -499,6 +499,8 @@ export class UsersService {
       },
     });
 
+    // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
+
     //if the user has the default avatar
     if (find_user.avatarUrl === 'default_avatar.png') {
       const absolutePath = path.join(
@@ -506,6 +508,7 @@ export class UsersService {
         this.config.get('DEFAULT_AVATAR_PATH'),
         user.avatarUrl,
       );
+      // console.log(absolutePath);
       return res.sendFile(absolutePath);
     }
     //if the user has a custom avatar
@@ -515,6 +518,7 @@ export class UsersService {
         this.config.get('AVATAR_PATH'),
         user.avatarUrl,
       );
+      // console.log(absolutePath);
       return res.sendFile(absolutePath);
     }
   }
