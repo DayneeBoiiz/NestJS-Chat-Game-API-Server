@@ -8,7 +8,6 @@ import {
   Req,
   Get,
   Patch,
-  
   UseInterceptors,
   BadRequestException,
   UploadedFile,
@@ -62,6 +61,12 @@ export class UsersController {
   @Get('all-users')
   async handleGetAllUsers() {
     return this.userService.handleGetAllUsers();
+  }
+
+  @Get('me')
+  getMe(@GetUser() user: User) {
+    delete user.TwofaAutSecret;
+    return user;
   }
 
   @Post(':username/send-friend-request')
