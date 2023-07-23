@@ -348,6 +348,7 @@ export class UsersService {
         id: true,
         email: true,
         nickname: true,
+        avatarUrl: true,
       },
     });
 
