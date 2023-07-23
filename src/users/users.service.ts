@@ -21,7 +21,7 @@ export class UsersService {
   }
 
   private scheduleDataCleanup() {
-    const job = new CronJob('*/5 * * * *', async () => {
+    const job = new CronJob('0 0 * * *', async () => {
       try {
         await this.deleteOldTokens();
       } catch (error) {
@@ -569,7 +569,7 @@ export class UsersService {
     await this.prisma.blockedTokens.deleteMany({
       where: {
         createdAt: {
-          lt: fiveMinutesAgo,
+          lt: oneDayAgo,
         },
       },
     });
