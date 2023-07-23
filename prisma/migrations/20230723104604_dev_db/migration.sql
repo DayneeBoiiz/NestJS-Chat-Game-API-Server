@@ -6,11 +6,10 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "nickname" TEXT NOT NULL,
     "hash" TEXT NOT NULL,
-    "firstname" TEXT NOT NULL,
-    "lastname" TEXT NOT NULL,
     "TwofaAutSecret" TEXT,
     "TwofaAutEnabled" BOOLEAN DEFAULT false,
-    "avatarUrl" TEXT,
+    "avatarUrl" TEXT DEFAULT 'default_avatar.png',
+    "state" TEXT NOT NULL DEFAULT 'offline',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -75,6 +74,16 @@ CREATE TABLE "BlockedUser" (
 );
 
 -- CreateTable
+CREATE TABLE "BlockedTokens" (
+    "id" SERIAL NOT NULL,
+    "createdAT" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "token" TEXT,
+
+    CONSTRAINT "BlockedTokens_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_AdminRooms" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -100,6 +109,9 @@ CREATE UNIQUE INDEX "BlockedUser_userID_key" ON "BlockedUser"("userID");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BlockedUser_blockedUserID_key" ON "BlockedUser"("blockedUserID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BlockedTokens_token_key" ON "BlockedTokens"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_AdminRooms_AB_unique" ON "_AdminRooms"("A", "B");

@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { UserDetails } from './utils/types';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
+    private userService: UsersService,
   ) {}
 
   async findUser(id: number) {
@@ -73,9 +75,9 @@ export class AuthService {
   }
 
   async login(dto: AuthDtoLogin) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findFirst({
       where: {
-        email: dto.email,
+        OR: [{ email: dto.email }, { nickname: dto.email }],
       },
     });
     if (!user) throw new UnauthorizedException('Invalid email or password');
@@ -83,6 +85,7 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Incorrect password');
     }
+    await this.userService.onlineState(user);
     return this.signToken(user.id, user.email);
   }
 
@@ -98,7 +101,7 @@ export class AuthService {
     const secret = this.config.get('JWT_SECRET');
 
     const ret = await this.jwt.signAsync(payload, {
-      expiresIn: '1d',
+      expiresIn: '5m',
       secret: secret,
     });
 

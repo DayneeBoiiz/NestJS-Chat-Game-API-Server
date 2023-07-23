@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy';
 import { Strategy_42 } from './strategy/42.strategy';
 import { SessionSerializer } from './strategy/serilzer';
+import { UsersService } from 'src/users/users.service';
 
 @Module({
   imports: [JwtModule.register({})],
@@ -14,6 +15,7 @@ import { SessionSerializer } from './strategy/serilzer';
     JwtStrategy,
     Strategy_42,
     SessionSerializer,
+    UsersService,
     {
       provide: 'FortyTwoStrategy',
       useClass: AuthService,

@@ -14,10 +14,10 @@ export class AuthDtoRegister {
   @IsString()
   @IsNotEmpty()
   @MinLength(6, {
-    message: 'Username is too short. Minimum length is 6 characters.',
+    message: 'Password is too short. Minimum length is 6 characters.',
   })
   @MaxLength(20, {
-    message: 'Username is too long. Maximum length is 20 characters.',
+    message: 'Password is too long. Maximum length is 20 characters.',
   })
   password: string;
 
@@ -27,11 +27,33 @@ export class AuthDtoRegister {
 }
 
 export class AuthDtoLogin {
-  @IsEmail()
+  @IsString()
   @IsNotEmpty()
   email: string;
 
   @IsString()
   @IsNotEmpty()
   password: string;
+}
+
+export class UsernameDto {
+  @IsString()
+  @IsNotEmpty()
+  nickname: string;
+}
+
+export class NewPassDto {
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(6, {
+    message: 'Password is too short. Minimum length is 6 characters.',
+  })
+  @MaxLength(20, {
+    message: 'Password is too long. Maximum length is 20 characters.',
+  })
+  new_password: string;
 }
