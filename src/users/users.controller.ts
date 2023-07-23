@@ -12,6 +12,7 @@ import {
   BadRequestException,
   UploadedFile,
   Res,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guard';
 import { UsersService } from './users.service';
@@ -19,8 +20,12 @@ import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from '@prisma/client';
+import { NewPassDto, UsernameDto } from 'src/auth/dto';
+import { Token } from 'src/auth/decorator/token.decorator';
+import { JwtBlacklistGuard } from 'src/auth/guard/jwt-blacklist.guard';
 
 @UseGuards(JwtGuard)
+@UseGuards(JwtBlacklistGuard)
 @Controller('users')
 export class UsersController {
   constructor(private userService: UsersService) {}
@@ -52,10 +57,27 @@ export class UsersController {
     this.userService.updateAvatar(avatar, user);
   }
 
-  @Get('my-avatar')
+  // @Get('my-avatar')
+  // @UseGuards(JwtGuard)
+  // getAvatar(@GetUser() user: User, @Res() res: Response) {
+  //   return this.userService.getAvatar(user, res);
+  // }
+
+  @Patch('me/settings/change-username')
   @UseGuards(JwtGuard)
-  getAvatar(@GetUser() user: User, @Res() res: Response) {
-    return this.userService.getAvatar(user, res);
+  async changeUsername(
+    @GetUser() user: User,
+    @Body() usernamedto: UsernameDto,
+  ) {
+    await this.userService.changeUsername(user, usernamedto);
+  }
+
+  @Patch('me/settings/new-password')
+  @UseGuards(JwtGuard)
+  async changePass(@GetUser() user: User, @Body() newpassdto: NewPassDto) {
+    const isPassValid = await this.userService.isPassValid(newpassdto, user);
+    if (!isPassValid) throw new ForbiddenException('incorrect password');
+    await this.userService.setNewPass(newpassdto, user);
   }
 
   @Get('all-users')
@@ -193,5 +215,11 @@ export class UsersController {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  @Get('logout')
+  async logout(@GetUser() user: User, @Token() token) {
+    await this.userService.addToBlockedTokens(token);
+    await this.userService.offlineState(user);
   }
 }

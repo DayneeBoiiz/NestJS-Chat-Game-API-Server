@@ -1,11 +1,14 @@
-import { Injectable, UseGuards } from '@nestjs/common';
+import { ConflictException, Injectable, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as argon from 'argon2';
 import { Response } from 'express';
+import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
+import { NewPassDto, UsernameDto } from 'src/auth/dto';
 
 @Injectable()
 export class UsersService {
@@ -13,11 +16,52 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
-  ) {}
+  ) {
+    this.scheduleDataCleanup();
+  }
+
+  private scheduleDataCleanup() {
+    const job = new CronJob('*/5 * * * *', async () => {
+      try {
+        await this.deleteOldTokens();
+      } catch (error) {
+        console.error('Error deleting blocked users:', error);
+      }
+    });
+
+    // Start the cron job
+    job.start();
+  }
 
   async handleGetAllUsers() {
     const users = await this.prisma.user.findMany();
     return users.map(({ hash, TwofaAutSecret, ...rest }) => rest);
+  }
+
+  async addToBlockedTokens(token: string): Promise<void> {
+    await this.prisma.blockedTokens.create({ data: { token } });
+  }
+
+  async onlineState(user: User) {
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        state: 'online',
+      },
+    });
+  }
+
+  async offlineState(user: User) {
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        state: 'offline',
+      },
+    });
   }
 
   async extratUserIdFromHeader(token: string) {
@@ -43,8 +87,6 @@ export class UsersService {
           nickname: userName,
         },
       });
-
-      // console.log(user, friend);
 
       if (user.id === friend.id) {
         throw new Error('Cannot remove yourself');
@@ -189,18 +231,10 @@ export class UsersService {
     senderUserName: string,
     recieverUserName: string,
   ) {
-    // console.log('recieverUserName --> ', senderUserName);
-    // console.log('recieverUserName ==> ', recieverUserName);
-
-    // console.log(senderUserName);
-    // console.log(recieverUserName);
     const { senderID, recieverID } = await this.getUsersId(
       senderUserName,
       recieverUserName,
     );
-
-    // console.log(senderID);
-    // console.log(recieverID);
 
     try {
       const friendRequest = await this.prisma.friendRequest.findFirst({
@@ -236,9 +270,6 @@ export class UsersService {
       console.log(error);
     }
   }
-
-  // DayneeBoiiz "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic2FhZC5heWFyQGhvdG1haWwuY29tIiwiaWF0IjoxNjg3MDc5NDA1LCJleHAiOjE2ODcxNjU4MDV9.x_rOO1VEOmcKHKmxFyPXHSmw2XHyA5CTv1K6PwGMofs"
-  // FixGree "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoic2FhZC5heWFyQGhvdG1haWwuZnIiLCJpYXQiOjE2ODcwNzk0MjYsImV4cCI6MTY4NzE2NTgyNn0._Ky7DM4My9t1MO9L6-ieVI-d8ruY_LXtGaM7fE6EhRg"
 
   async handleSendFriendRequest(userName: string, recipientUserName: string) {
     try {
@@ -413,6 +444,41 @@ export class UsersService {
     }
   }
 
+  async isPassValid(newpassdto: NewPassDto, user: User) {
+    const verify = await argon.verify(user.hash, newpassdto.password);
+    if (verify) return true;
+    return false;
+  }
+
+  async setNewPass(newpassdto: NewPassDto, user: User) {
+    const hash = await argon.hash(newpassdto.new_password);
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        hash: hash,
+      },
+    });
+  }
+
+  async changeUsername(user: User, usernamedto: UsernameDto) {
+    const exist = await this.prisma.user.findUnique({
+      where: {
+        nickname: usernamedto.nickname,
+      },
+    });
+    if (exist) throw new ConflictException('username already taken');
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        nickname: usernamedto.nickname,
+      },
+    });
+  }
+
   async handleBlockUser(userID: number, blockedUserName: string) {
     try {
       const user = await this.prisma.user.findUnique({
@@ -492,34 +558,50 @@ export class UsersService {
     });
   }
 
-  async getAvatar(user: User, res: Response) {
-    const find_user = await this.prisma.user.findUnique({
+  async deleteOldTokens() {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const fiveMinutesAgo = new Date();
+    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+
+    await this.prisma.blockedTokens.deleteMany({
       where: {
-        id: user.id,
+        createdAt: {
+          lt: fiveMinutesAgo,
+        },
       },
     });
-
-    // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
-
-    //if the user has the default avatar
-    if (find_user.avatarUrl === 'default_avatar.png') {
-      const absolutePath = path.join(
-        __dirname,
-        this.config.get('DEFAULT_AVATAR_PATH'),
-        user.avatarUrl,
-      );
-      // console.log(absolutePath);
-      return res.sendFile(absolutePath);
-    }
-    //if the user has a custom avatar
-    else {
-      const absolutePath = path.join(
-        __dirname,
-        this.config.get('AVATAR_PATH'),
-        user.avatarUrl,
-      );
-      // console.log(absolutePath);
-      return res.sendFile(absolutePath);
-    }
   }
+
+  // async getAvatar(user: User, res: Response) {
+  //   const find_user = await this.prisma.user.findUnique({
+  //     where: {
+  //       id: user.id,
+  //     },
+  //   });
+
+  //   // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
+
+  //   //if the user has the default avatar
+  //   if (find_user.avatarUrl === 'default_avatar.png') {
+  //     const absolutePath = path.join(
+  //       __dirname,
+  //       this.config.get('DEFAULT_AVATAR_PATH'),
+  //       user.avatarUrl,
+  //     );
+  //     // console.log(absolutePath);
+  //     return res.sendFile(absolutePath);
+  //   }
+  //   //if the user has a custom avatar
+  //   else {
+  //     const absolutePath = path.join(
+  //       __dirname,
+  //       this.config.get('AVATAR_PATH'),
+  //       user.avatarUrl,
+  //     );
+  //     // console.log(absolutePath);
+  //     return res.sendFile(absolutePath);
+  //   }
+  // }
 }

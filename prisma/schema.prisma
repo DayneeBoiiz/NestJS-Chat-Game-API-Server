@@ -22,12 +22,13 @@ model User {
   email    String @unique
   nickname String @unique
 
-  hash      String
+  hash String
 
   TwofaAutSecret  String?
   TwofaAutEnabled Boolean? @default(false)
 
   avatarUrl String? @default("default_avatar.png")
+  state     String  @default("offline")
 
   room      Room[]
   roomOwner Room[] @relation("roomOwner")
@@ -117,3 +118,10 @@ model BlockedUser {
   blockedUserID Int  @unique
 }
 
+model BlockedTokens {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  token String? @unique
+}

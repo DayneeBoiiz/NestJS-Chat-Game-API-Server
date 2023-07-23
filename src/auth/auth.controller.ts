@@ -26,11 +26,6 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  @Post('logout')
-  async logout(@Req() req: Request) {
-    req.res.clearCookie('access_token');
-  }
-
   @Get('/cookie/login')
   async CookieLogin(@Req() req: Request) {
     console.log(req);
