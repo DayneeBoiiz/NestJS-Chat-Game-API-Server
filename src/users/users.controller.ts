@@ -24,8 +24,8 @@ import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { Token } from 'src/auth/decorator/token.decorator';
 import { JwtBlacklistGuard } from 'src/auth/guard/jwt-blacklist.guard';
 
+// @UseGuards(JwtBlacklistGuard)
 @UseGuards(JwtGuard)
-@UseGuards(JwtBlacklistGuard)
 @Controller('users')
 export class UsersController {
   constructor(private userService: UsersService) {}
@@ -64,7 +64,6 @@ export class UsersController {
   // }
 
   @Patch('me/settings/change-username')
-  @UseGuards(JwtGuard)
   async changeUsername(
     @GetUser() user: User,
     @Body() usernamedto: UsernameDto,
@@ -73,7 +72,6 @@ export class UsersController {
   }
 
   @Patch('me/settings/new-password')
-  @UseGuards(JwtGuard)
   async changePass(@GetUser() user: User, @Body() newpassdto: NewPassDto) {
     const isPassValid = await this.userService.isPassValid(newpassdto, user);
     if (!isPassValid) throw new ForbiddenException('incorrect password');
@@ -106,6 +104,15 @@ export class UsersController {
     }
   }
 
+  @Get('friend-request-list')
+  async handleGetFriendList(@GetUser() user: User) {
+    try {
+      return await this.userService.handleGetFriendRequestList(user.id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   @Post(':senderusername/friend-request/:receiverusername/accept')
   async handleAcceptFriendRequest(
     @Param('senderusername') senderUserName: string,
@@ -132,15 +139,16 @@ export class UsersController {
     );
   }
 
-  @Post('reject')
+  @Post(':username/reject')
   async handleRejectFriendRequest(
-    @Body() data: { userID: number; userName: string },
+    @GetUser() user: User,
+    @Param('username') username: string,
   ) {
     try {
-      console.log(data.userName);
+      // console.log(data.userName);
       return await this.userService.handleRejectFriendRequest(
-        data.userID,
-        data.userName,
+        user.id,
+        username,
       );
       // return { message: 'Friend request rejected' };
     } catch (error) {
@@ -149,14 +157,13 @@ export class UsersController {
     }
   }
 
-  @Post('cancel-request')
+  @Post(':username/cancel-request')
   async handleCancelFriendRequest(
-    @Body() data: { userID: number; userName: string },
+    @GetUser() user: User,
+    @Param('username') username: string,
   ) {
-    const { userID, userName } = data;
-
     try {
-      await this.userService.handleCancelFriendRequest(userID, userName);
+      await this.userService.handleCancelFriendRequest(user.id, username);
       return { message: 'Friend request cancelled' };
     } catch (error) {
       console.log(error);
@@ -164,12 +171,13 @@ export class UsersController {
     }
   }
 
-  @Post('block-user')
-  async handleBlockUser(@Body() data: { userID: number; userName: string }) {
-    const { userID, userName } = data;
-
+  @Post(':username/block-user')
+  async handleBlockUser(
+    @Param('username') username: string,
+    @GetUser() user: User,
+  ) {
     try {
-      return await this.userService.handleBlockUser(userID, userName);
+      return await this.userService.handleBlockUser(user.id, username);
       // return { Message: 'User Blocked' };
     } catch (error) {
       console.log(error);
@@ -177,6 +185,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(JwtGuard)
   @Get(':username/profile')
   async handleGetProfile(@Param('username') userName: string) {
     try {

@@ -38,7 +38,6 @@ export class AuthController {
   }
 
   @Get('42/callback')
-  @Redirect('http://localhost:5173/login/success')
   @UseGuards(FortyTwoStrategy)
   handle42Redirect(@Req() req: Request) {
     return req.user;
