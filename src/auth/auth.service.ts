@@ -45,6 +45,7 @@ export class AuthService {
           nickname: details.login,
           avatarUrl: details.avatrURL,
           hash: '',
+          provider: 'intra',
         },
       });
 
@@ -64,6 +65,7 @@ export class AuthService {
           email: dto.email,
           hash: hash,
           nickname: dto.nickname,
+          provider: 'email',
         },
       });
       return this.signToken(user.id, user.email);

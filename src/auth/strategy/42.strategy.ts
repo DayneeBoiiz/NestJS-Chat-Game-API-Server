@@ -28,7 +28,7 @@ export class Strategy_42 extends PassportStrategy(FortyTwoStrategy) {
       avatrURL: profile._json.image.link,
     });
 
-    console.log(user);
+    // console.log(user);
     if (!user) {
       throw new UnauthorizedException();
     }

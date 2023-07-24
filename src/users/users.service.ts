@@ -148,8 +148,8 @@ export class UsersService {
 
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
-          senderID: userID,
-          recipientID: recipient.id,
+          senderID: recipient.id,
+          recipientID: userID,
         },
       });
 
@@ -304,6 +304,10 @@ export class UsersService {
           nickname: recipientUserName,
         },
       });
+
+      if (sender.id === recipient.id) {
+        throw new Error('Invalid Request');
+      }
 
       if (!recipient) {
         throw new Error('Invalid recipient');
@@ -532,6 +536,18 @@ export class UsersService {
       console.log(error);
       throw new Error('Failed to block user');
     }
+  }
+
+  async handleGetFriendRequestList(userID: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userID,
+      },
+      include: {
+        receivedFriendRequests: true,
+      },
+    });
+    return user?.receivedFriendRequests;
   }
 
   async updateAvatar(avatar: Express.Multer.File, user: User) {

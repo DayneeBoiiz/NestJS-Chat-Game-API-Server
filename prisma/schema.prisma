@@ -29,6 +29,7 @@ model User {
 
   avatarUrl String? @default("default_avatar.png")
   state     String  @default("offline")
+  provider  String?
 
   room      Room[]
   roomOwner Room[] @relation("roomOwner")
