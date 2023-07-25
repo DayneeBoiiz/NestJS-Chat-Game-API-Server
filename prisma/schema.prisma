@@ -46,6 +46,8 @@ model User {
 
   blockedUsers   BlockedUser[] @relation("userBlockedUsers")
   usersBlockedBy BlockedUser[] @relation("blockedUserBlockedUsers")
+
+  friendStatus  String? @default("None")
 }
 
 model Room {
@@ -93,6 +95,8 @@ model FriendRequest {
 
   recipient   User @relation("ReceivedFriendRequest", fields: [recipientID], references: [id])
   recipientID Int
+
+  friendRequestStatus String   @default("Pending")
 }
 
 model Friend {

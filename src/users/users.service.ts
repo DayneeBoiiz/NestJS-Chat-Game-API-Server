@@ -343,7 +343,7 @@ export class UsersService {
     }
   }
 
-  async handleGetProfile(userName: string) {
+  async handleGetProfile(userName: string, userID: number) {
     const publicProfile = await this.prisma.user.findUnique({
       where: {
         nickname: userName,
@@ -353,8 +353,59 @@ export class UsersService {
         email: true,
         nickname: true,
         avatarUrl: true,
+        friendStatus: true,
+        // sentFriendRequests: {
+        //   where: {
+        //     recipientID: userID,
+        //   },
+        //   // select: {
+        //   //   friendRequestStatus: true,
+        //   // },
+        // },
+        receivedFriendRequests: {
+          where: {
+            senderID: userID,
+          },
+          select: {
+            friendRequestStatus: true,
+          },
+        },
+        sentFriends: {
+          where: {
+            receivedByID: userID,
+          },
+          select: {
+            receivedByID: true,
+          },
+        },
+        receivedFriends: {
+          where: {
+            sentByID: userID,
+          },
+          select: {
+            sentByID: true,
+          },
+        },
       },
     });
+
+    if (
+      publicProfile.receivedFriendRequests.some(
+        (req) => req.friendRequestStatus === 'Pending',
+      )
+    ) {
+      publicProfile.friendStatus = 'pending';
+    } else if (
+      publicProfile.sentFriends.some((friend) => friend.receivedByID === userID)
+    ) {
+      publicProfile.friendStatus = 'friend';
+    } else if (
+      publicProfile.receivedFriends.some((friend) => friend.sentByID === userID)
+    ) {
+      publicProfile.friendStatus = 'friend';
+    }
+
+    // console.log(publicProfile.receivedFriendRequests);
 
     return publicProfile;
   }
