@@ -24,7 +24,7 @@ import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { Token } from 'src/auth/decorator/token.decorator';
 import { JwtBlacklistGuard } from 'src/auth/guard/jwt-blacklist.guard';
 
-// @UseGuards(JwtBlacklistGuard)
+@UseGuards(JwtBlacklistGuard)
 @UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
@@ -185,11 +185,16 @@ export class UsersController {
     }
   }
 
-  @UseGuards(JwtGuard)
   @Get(':username/profile')
-  async handleGetProfile(@Param('username') userName: string) {
+  async handleGetProfile(
+    @GetUser() user: User,
+    @Param('username') userName: string,
+  ) {
     try {
-      const publicProfile = await this.userService.handleGetProfile(userName);
+      const publicProfile = await this.userService.handleGetProfile(
+        userName,
+        user.id,
+      );
       return publicProfile;
     } catch (error) {
       console.log(error);
