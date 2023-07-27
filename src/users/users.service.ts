@@ -595,7 +595,16 @@ export class UsersService {
         id: userID,
       },
       include: {
-        receivedFriendRequests: true,
+        receivedFriendRequests: {
+          include: {
+            sender: {
+              select: {
+                nickname: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
       },
     });
     return user?.receivedFriendRequests;
