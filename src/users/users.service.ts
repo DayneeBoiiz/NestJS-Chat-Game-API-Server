@@ -134,39 +134,44 @@ export class UsersService {
     }
   }
 
-  async handleRejectFriendRequest(userID: number, userName: string) {
+  async handleRejectFriendRequest(receiverName: string, senderName: string) {
     try {
-      const recipient = await this.prisma.user.findUnique({
-        where: {
-          nickname: userName,
-        },
-      });
-
-      if (!recipient) {
-        throw new Error('User not found');
-      }
-
+      // Check if the friend request exists
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
-          senderID: recipient.id,
-          recipientID: userID,
+          sender: {
+            nickname: senderName,
+          },
+          recipient: {
+            nickname: receiverName,
+          },
+        },
+        include: {
+          recipient: true,
         },
       });
-
-      // console.log(friendRequest);
 
       if (!friendRequest) {
         throw new Error('Friend request not found');
       }
 
+      console.log(friendRequest.recipient.nickname);
+
+      // Check if the sender is actually the recipient of the friend request
+      if (friendRequest.recipient.nickname === senderName) {
+        throw new Error('You can only reject friend requests sent to you.');
+      }
+
+      // Delete the friend request
       await this.prisma.friendRequest.delete({
         where: {
           id: friendRequest.id,
         },
       });
-      return { message: 'Friend request rejected' };
+
+      return 'Friend request rejected successfully';
     } catch (error) {
-      console.log(error);
+      throw new Error('Failed to reject friend request');
     }
   }
 
@@ -178,10 +183,23 @@ export class UsersService {
         },
       });
 
+      if (!recipient) {
+        throw new Error('Recipient not found');
+      }
+
+      // Check if the recipient made the friend request to the user
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
-          senderID: userID,
-          recipientID: recipient.id,
+          OR: [
+            {
+              senderID: recipient.id,
+              recipientID: userID,
+            },
+            {
+              senderID: userID,
+              recipientID: recipient.id,
+            },
+          ],
         },
       });
 
@@ -189,16 +207,52 @@ export class UsersService {
         throw new Error('Friend request not found');
       }
 
+      // Check if the user requested with themselves
+      if (friendRequest.senderID === friendRequest.recipientID) {
+        throw new Error(
+          "You can't cancel a friend request you made to yourself.",
+        );
+      }
+
       await this.prisma.friendRequest.delete({
         where: {
           id: friendRequest.id,
         },
       });
+
       return { message: 'Friend request cancelled' };
     } catch (error) {
-      console.log(error);
       throw new Error('Failed to cancel friend request');
     }
+
+    // try {
+    //   const recipient = await this.prisma.user.findUnique({
+    //     where: {
+    //       nickname: userName,
+    //     },
+    //   });
+
+    //   const friendRequest = await this.prisma.friendRequest.findFirst({
+    //     where: {
+    //       senderID: userID,
+    //       recipientID: recipient.id,
+    //     },
+    //   });
+
+    //   if (!friendRequest) {
+    //     throw new Error('Friend request not found');
+    //   }
+
+    //   await this.prisma.friendRequest.delete({
+    //     where: {
+    //       id: friendRequest.id,
+    //     },
+    //   });
+    //   return { message: 'Friend request cancelled' };
+    // } catch (error) {
+    //   console.log(error);
+    //   throw new Error('Failed to cancel friend request');
+    // }
   }
 
   async getUsersId(senderUserName: string, recieverUserName: string) {
@@ -221,26 +275,31 @@ export class UsersService {
         throw new Error('Invalid Usename');
       }
 
-      return { senderID: sender.id, recieverID: reciever.id };
+      return { senderID: sender.id, receiverID: reciever.id };
     } catch (error) {
       console.log(error);
     }
   }
 
-  async handleAcceptFriendRequest(
-    senderUserName: string,
-    recieverUserName: string,
-  ) {
-    const { senderID, recieverID } = await this.getUsersId(
-      senderUserName,
-      recieverUserName,
-    );
-
+  async handleAcceptFriendRequest(senderName: string, receiverName: string) {
     try {
+      const { senderID, receiverID } = await this.getUsersId(
+        senderName,
+        receiverName,
+      );
+
+      // Check if the friend request exists
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
-          senderID: senderID,
-          recipientID: recieverID,
+          sender: {
+            nickname: senderName,
+          },
+          recipient: {
+            nickname: receiverName,
+          },
+        },
+        include: {
+          recipient: true,
         },
       });
 
@@ -248,26 +307,35 @@ export class UsersService {
         throw new Error('Friend request not found');
       }
 
+      // Check if the sender is actually the recipient of the friend request
+      if (friendRequest.recipient.nickname === senderName) {
+        throw new Error('You can only accept friend requests sent to you.');
+      }
+
+      // Create friendship records for both users
       await this.prisma.friend.createMany({
         data: [
           {
             sentByID: senderID,
-            receivedByID: recieverID,
+            receivedByID: receiverID,
           },
           {
-            sentByID: recieverID,
+            sentByID: receiverID,
             receivedByID: senderID,
           },
         ],
       });
 
+      // Delete the friend request
       await this.prisma.friendRequest.delete({
         where: {
           id: friendRequest.id,
         },
       });
+
+      return 'Friend request accepted successfully';
     } catch (error) {
-      console.log(error);
+      throw new Error('Failed to accept friend request');
     }
   }
 

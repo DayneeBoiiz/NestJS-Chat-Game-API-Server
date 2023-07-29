@@ -113,15 +113,22 @@ export class UsersController {
     }
   }
 
-  @Post(':senderusername/friend-request/:receiverusername/accept')
+  @Post('/friend-request/:sender/accept')
   async handleAcceptFriendRequest(
-    @Param('senderusername') senderUserName: string,
-    @Param('receiverusername') recieverUserName: string,
+    @GetUser() reciever: User,
+    @Param('sender') senderUserame: string,
   ) {
-    await this.userService.handleAcceptFriendRequest(
-      senderUserName,
-      recieverUserName,
-    );
+    try {
+      await this.userService.handleAcceptFriendRequest(
+        senderUserame,
+        reciever.nickname,
+      );
+    } catch (error) {
+      console.log(error);
+    }
+
+    // console.log('Reciever Username : ', reciever.nickname);
+    // console.log('Sender Username : ', senderUserame);
   }
 
   @Delete(':username')
@@ -142,18 +149,15 @@ export class UsersController {
   @Post(':username/reject')
   async handleRejectFriendRequest(
     @GetUser() user: User,
-    @Param('username') username: string,
+    @Param('username') sender: string,
   ) {
     try {
-      // console.log(data.userName);
       return await this.userService.handleRejectFriendRequest(
-        user.id,
-        username,
+        user.nickname,
+        sender,
       );
-      // return { message: 'Friend request rejected' };
     } catch (error) {
       console.log(error);
-      throw new Error('Failed to reject friend request');
     }
   }
 
@@ -167,7 +171,6 @@ export class UsersController {
       return { message: 'Friend request cancelled' };
     } catch (error) {
       console.log(error);
-      throw new Error('Failed to cancel friend request');
     }
   }
 
@@ -178,10 +181,8 @@ export class UsersController {
   ) {
     try {
       return await this.userService.handleBlockUser(user.id, username);
-      // return { Message: 'User Blocked' };
     } catch (error) {
       console.log(error);
-      // throw new Error('Failed to block user');
     }
   }
 
