@@ -548,6 +548,8 @@ export class UsersService {
                 select: {
                   id: true,
                   nickname: true,
+                  state: true,
+                  avatarUrl: true,
                 },
               },
             },

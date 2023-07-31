@@ -223,10 +223,10 @@ export class UsersController {
     }
   }
 
-  @Get(':username/friendlist')
-  async handleGetFriendlist(@Param('username') username: string) {
+  @Get('friendlist')
+  async handleGetFriendlist(@GetUser() user: User) {
     try {
-      return this.userService.handleGetFriendlist(username);
+      return this.userService.handleGetFriendlist(user.nickname);
     } catch (error) {
       console.log(error);
     }
