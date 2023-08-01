@@ -3,14 +3,14 @@ import {
   Controller,
   Get,
   Post,
-  Redirect,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDtoLogin, AuthDtoRegister } from './dto';
 import { FortyTwoStrategy } from './strategy/42.guard';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -39,7 +39,19 @@ export class AuthController {
 
   @Get('42/callback')
   @UseGuards(FortyTwoStrategy)
-  handle42Redirect(@Req() req: Request) {
-    return req.user;
+  handle42Redirect(@Req() req: Request, @Res() res: Response) {
+    const token = req.user;
+    // console.log(token);
+    res.cookie('token', JSON.stringify(req.user), { httpOnly: true });
+    res.redirect('/auth/success');
+  }
+
+  @Get('success')
+  handleSuccess(@Req() req: Request) {
+    // You can access the user object from the cookie
+    // const token = req.cookies.token;
+    // // Handle the user data or return a response to the frontend
+    // return { token };
+    // console.log(req);
   }
 }
