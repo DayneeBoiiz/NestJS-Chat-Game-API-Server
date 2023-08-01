@@ -82,19 +82,32 @@ export class AuthService {
         OR: [{ email: dto.email }, { nickname: dto.email }],
       },
     });
+
     if (!user) throw new UnauthorizedException('Invalid email or password');
+
     const isMatch = await argon.verify(user.hash, dto.password);
+
     if (!isMatch) {
       throw new UnauthorizedException('Incorrect password');
     }
+
+    const isFirstLogin = user.FirstLogin;
+    const returnBoolean = isFirstLogin;
+
+    if (isFirstLogin) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { FirstLogin: false },
+      });
+    }
+
     await this.userService.onlineState(user);
-    return this.signToken(user.id, user.email);
+
+    const access_token = await this.signToken(user.id, user.email);
+    return { isFirstLogin: returnBoolean, access_token: access_token };
   }
 
-  async signToken(
-    userId: number,
-    email: string,
-  ): Promise<{ access_token: string }> {
+  async signToken(userId: number, email: string): Promise<string> {
     const payload = {
       sub: userId,
       email,
@@ -107,8 +120,6 @@ export class AuthService {
       secret: secret,
     });
 
-    return {
-      access_token: ret,
-    };
+    return ret;
   }
 }

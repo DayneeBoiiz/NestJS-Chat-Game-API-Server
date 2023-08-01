@@ -27,6 +27,8 @@ model User {
   TwofaAutSecret  String?
   TwofaAutEnabled Boolean? @default(false)
 
+  FirstLogin Boolean? @default(true)
+
   avatarUrl String? @default("default_avatar.png")
   state     String  @default("offline")
   provider  String?
