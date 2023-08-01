@@ -422,20 +422,22 @@ export class UsersService {
         nickname: true,
         avatarUrl: true,
         friendStatus: true,
-        // sentFriendRequests: {
-        //   where: {
-        //     recipientID: userID,
-        //   },
-        //   // select: {
-        //   //   friendRequestStatus: true,
-        //   // },
-        // },
+        sentFriendRequests: {
+          where: {
+            recipientID: userID,
+          },
+          select: {
+            friendRequestStatus: true,
+            recipientID: true,
+          },
+        },
         receivedFriendRequests: {
           where: {
             senderID: userID,
           },
           select: {
             friendRequestStatus: true,
+            senderID: true,
           },
         },
         sentFriends: {
@@ -458,11 +460,15 @@ export class UsersService {
     });
 
     if (
+      publicProfile.sentFriendRequests.some((req) => req.recipientID === userID)
+    ) {
+      publicProfile.friendStatus = 'Pending Received';
+    } else if (
       publicProfile.receivedFriendRequests.some(
-        (req) => req.friendRequestStatus === 'Pending',
+        (req) => req.senderID === userID,
       )
     ) {
-      publicProfile.friendStatus = 'pending';
+      publicProfile.friendStatus = 'Pending Sent';
     } else if (
       publicProfile.sentFriends.some((friend) => friend.receivedByID === userID)
     ) {
