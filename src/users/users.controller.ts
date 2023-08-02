@@ -57,11 +57,11 @@ export class UsersController {
     this.userService.updateAvatar(avatar, user);
   }
 
-  // @Get('my-avatar')
-  // @UseGuards(JwtGuard)
-  // getAvatar(@GetUser() user: User, @Res() res: Response) {
-  //   return this.userService.getAvatar(user, res);
-  // }
+  @Get('my-avatar')
+  @UseGuards(JwtGuard)
+  getAvatar(@GetUser() user: User, @Res() res: Response) {
+    return this.userService.getAvatar(user, res);
+  }
 
   @Patch('me/settings/change-username')
   async changeUsername(

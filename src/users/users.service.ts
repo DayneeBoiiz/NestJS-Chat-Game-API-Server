@@ -727,34 +727,34 @@ export class UsersService {
     });
   }
 
-  // async getAvatar(user: User, res: Response) {
-  //   const find_user = await this.prisma.user.findUnique({
-  //     where: {
-  //       id: user.id,
-  //     },
-  //   });
+  async getAvatar(user: User, res: Response) {
+    const find_user = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+    });
 
-  //   // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
+    // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
 
-  //   //if the user has the default avatar
-  //   if (find_user.avatarUrl === 'default_avatar.png') {
-  //     const absolutePath = path.join(
-  //       __dirname,
-  //       this.config.get('DEFAULT_AVATAR_PATH'),
-  //       user.avatarUrl,
-  //     );
-  //     // console.log(absolutePath);
-  //     return res.sendFile(absolutePath);
-  //   }
-  //   //if the user has a custom avatar
-  //   else {
-  //     const absolutePath = path.join(
-  //       __dirname,
-  //       this.config.get('AVATAR_PATH'),
-  //       user.avatarUrl,
-  //     );
-  //     // console.log(absolutePath);
-  //     return res.sendFile(absolutePath);
-  //   }
-  // }
+    //if the user has the default avatar
+    if (find_user.avatarUrl === 'default_avatar.png') {
+      const absolutePath = path.join(
+        __dirname,
+        this.config.get('DEFAULT_AVATAR_PATH'),
+        user.avatarUrl,
+      );
+      // console.log(absolutePath);
+      return res.sendFile(absolutePath);
+    }
+    //if the user has a custom avatar
+    else {
+      const absolutePath = path.join(
+        __dirname,
+        this.config.get('AVATAR_PATH'),
+        user.avatarUrl,
+      );
+      // console.log(absolutePath);
+      return res.sendFile(absolutePath);
+    }
+  }
 }
