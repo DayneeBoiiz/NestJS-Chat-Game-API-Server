@@ -1,6 +1,7 @@
 import { Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -35,7 +36,7 @@ export class ChatService {
           id: roomId,
         },
         data: {
-          user: {
+          users: {
             connect: {
               id: userId,
             },
@@ -67,7 +68,7 @@ export class ChatService {
         include: {
           admins: true,
           owner: true,
-          user: true,
+          users: true,
         },
       });
 
@@ -82,7 +83,7 @@ export class ChatService {
         let newOwnerId = null;
 
         if (isOwner) {
-          const participants = room.user;
+          const participants = room.users;
           const currentOwnerIndex = participants.findIndex(
             (participants) => participants.id === userID,
           );
@@ -101,7 +102,7 @@ export class ChatService {
                 id: userID,
               },
             },
-            user: {
+            users: {
               disconnect: {
                 id: userID,
               },
@@ -135,7 +136,7 @@ export class ChatService {
           id: roomID,
         },
         include: {
-          message: true,
+          messages: true,
         },
       });
 
@@ -184,7 +185,7 @@ export class ChatService {
           id: roomID,
         },
         data: {
-          user: {
+          users: {
             connect: {
               id: userID,
             },
@@ -235,30 +236,43 @@ export class ChatService {
     }
   }
 
-  async handleCreateRoom(roomName: string, userID: number) {
+  async handleCreateRoom(otherUser: number, userID: number) {
     try {
-      const room = await this.prisma.room.create({
-        data: {
-          isPrivate: false,
-          name: roomName,
-          user: {
-            connect: {
-              id: userID,
+      const existingRoom = await this.prisma.room.findFirst({
+        where: {
+          AND: [
+            { users: { some: { id: otherUser } } },
+            {
+              users: { some: { id: userID } },
             },
-          },
-          owner: {
-            connect: {
-              id: userID,
-            },
-          },
-          admins: {
-            connect: {
-              id: userID,
-            },
-          },
+          ],
+        },
+        include: {
+          users: true,
+          messages: true,
         },
       });
-      return room;
+
+      if (existingRoom) {
+        return existingRoom;
+      } else {
+        const newRoom = await this.prisma.room.create({
+          data: {
+            users: {
+              connect: [
+                {
+                  id: userID,
+                },
+                {
+                  id: otherUser,
+                },
+              ],
+            },
+            uid: uuidv4(),
+          },
+        });
+        return newRoom;
+      }
     } catch (error) {
       console.log(error);
     }

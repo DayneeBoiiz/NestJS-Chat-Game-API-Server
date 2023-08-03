@@ -57,17 +57,19 @@ model Room {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name      String
-  isPrivate Boolean
+  name      String?
+  isPrivate Boolean?
+  isGroup   Boolean?
   password  String?
 
+  uid String? @unique
   admins User[] @relation("AdminRooms")
 
-  owner   User @relation(name: "roomOwner", fields: [ownerID], references: [id])
-  ownerID Int  @unique
+  owner   User? @relation(name: "roomOwner", fields: [ownerID], references: [id])
+  ownerID Int?  @unique
 
-  user    User[]
-  message Message[]
+  users    User[]
+  messages Message[]
 }
 
 model Message {
