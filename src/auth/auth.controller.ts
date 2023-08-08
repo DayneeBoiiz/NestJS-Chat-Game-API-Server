@@ -41,7 +41,7 @@ export class AuthController {
   @UseGuards(FortyTwoStrategy)
   handle42Redirect(@Req() req: Request, @Res() res: Response) {
     const token = req.user;
-    res.cookie('token', token, { httpOnly: true });
+    res.cookie('token', token, { httpOnly: false });
     res.redirect('/auth/success');
   }
 

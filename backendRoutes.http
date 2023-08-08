@@ -1,5 +1,5 @@
 @hostname = http://localhost:9000
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNoemFiYWtoIiwiaWQiOjIsImlhdCI6MTY3NzE3NjM2MX0.UPB8wrZcstX3qUMHNDgTcvnyffZjC4KRa0_qByuKnqI
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoic2FhZC5heWFyQGhvdG1haWwuY29tIiwiaWF0IjoxNjkxNDkyODIyLCJleHAiOjE2OTE1NzkyMjJ9.OnoipaYXxU26-6iwSwrQ-0tqURHDLBgqsgsaWEhH6C0
 
 ### ------------------------------- REGISTER -------------------------------
 POST {{hostname}}/auth/register
@@ -154,4 +154,25 @@ Param: {username}
 POST {{hostname}/users/{username}/reject}
 Authorization: {{token}}
 Param: {username}
+#--------------------------------------------------------------------------
+
+### ------------------------------- MY CHATS ------------------------------
+GET {{hostname}}/chat/my-chats
+Authorization: {{token}}
+#--------------------------------------------------------------------------
+
+### ------------------------------- SEND MESSAGE --------------------------
+POST {{hostname}}/chat/send-message
+Authorization: {{token}}
+Body: 
+{
+    "RoomId": "c153cf5e-b9b9-4dfa-8a93-be2310f82018",
+    "message": "Hello World"
+}
+#--------------------------------------------------------------------------
+
+### ------------------------------- SEND MESSAGE --------------------------
+GET {{hostname}}/:roomId/messages
+Authorization: {{token}}
+Param: {roomID}
 #--------------------------------------------------------------------------

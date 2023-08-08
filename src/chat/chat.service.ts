@@ -199,42 +199,42 @@ export class ChatService {
     }
   }
 
-  async handleSendMessage(
-    client: Socket,
-    roomId: string,
-    message: string,
-    userID: number,
-    server: Server,
-  ) {
-    const roomID = parseInt(roomId, 10);
+  // async handleSendMessage(
+  //   client: Socket,
+  //   roomId: string,
+  //   message: string,
+  //   userID: number,
+  //   server: Server,
+  // ) {
+  //   const roomID = parseInt(roomId, 10);
 
-    const chatRoom = await this.prisma.room.findUnique({
-      where: {
-        id: roomID,
-      },
-    });
+  //   const chatRoom = await this.prisma.room.findUnique({
+  //     where: {
+  //       id: roomID,
+  //     },
+  //   });
 
-    if (chatRoom) {
-      const createdMessage = await this.prisma.message.create({
-        data: {
-          content: message,
-          room: {
-            connect: {
-              id: roomID,
-            },
-          },
-          sender: {
-            connect: {
-              id: userID,
-            },
-          },
-        },
-      });
-      server.to(`room:${roomID}`).emit('message', createdMessage);
-    } else {
-      client.emit('roomError', { message: 'Chat room not found' });
-    }
-  }
+  //   if (chatRoom) {
+  //     const createdMessage = await this.prisma.message.create({
+  //       data: {
+  //         content: message,
+  //         room: {
+  //           connect: {
+  //             id: roomID,
+  //           },
+  //         },
+  //         sender: {
+  //           connect: {
+  //             id: userID,
+  //           },
+  //         },
+  //       },
+  //     });
+  //     server.to(`room:${roomID}`).emit('message', createdMessage);
+  //   } else {
+  //     client.emit('roomError', { message: 'Chat room not found' });
+  //   }
+  // }
 
   async handleCreateRoom(otherUser: number, userID: number) {
     try {
@@ -270,11 +270,137 @@ export class ChatService {
             },
             uid: uuidv4(),
           },
+          include: {
+            users: true,
+            messages: true,
+          },
         });
         return newRoom;
       }
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async handleGetRoomMessages(roomId: string) {
+    try {
+      const messages = await this.prisma.message.findMany({
+        where: {
+          roomID: roomId,
+        },
+        include: {
+          sender: true,
+          seen: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      if (!messages) {
+        throw Error('No Messages Found');
+      }
+
+      return messages;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async handleSendMessage(
+    userID: number,
+    conversationdId: string,
+    message: string,
+  ) {
+    try {
+      const newMessage = await this.prisma.message.create({
+        data: {
+          content: message,
+          room: {
+            connect: {
+              uid: conversationdId,
+            },
+          },
+          sender: {
+            connect: {
+              id: userID,
+            },
+          },
+          seen: {
+            connect: {
+              id: userID,
+            },
+          },
+        },
+        include: {
+          sender: true,
+          seen: true,
+        },
+      });
+
+      if (!message) {
+        throw new Error('Error while sending the message');
+      }
+
+      const updatedRoom = await this.prisma.room.update({
+        where: {
+          uid: conversationdId,
+        },
+        data: {
+          lastMessageAt: new Date(),
+          messages: {
+            connect: {
+              id: newMessage.id,
+            },
+          },
+        },
+        include: {
+          users: true,
+          messages: {
+            include: {
+              seen: true,
+            },
+          },
+        },
+      });
+
+      if (!updatedRoom) {
+        throw Error('Error updating room');
+      }
+
+      return newMessage;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async handleGetMyChats(userID: number) {
+    try {
+      const rooms = await this.prisma.room.findMany({
+        orderBy: {
+          lastMessageAt: 'desc',
+        },
+        where: {
+          users: {
+            some: {
+              id: userID,
+            },
+          },
+        },
+        include: {
+          users: true,
+          messages: {
+            include: {
+              sender: true,
+              seen: true,
+            },
+          },
+        },
+      });
+
+      return rooms;
+    } catch (error) {
+      return error;
     }
   }
 }

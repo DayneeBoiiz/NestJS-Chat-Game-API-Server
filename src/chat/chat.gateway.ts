@@ -47,19 +47,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.chatService.handleJoinRoom(client, roomId, this.userID);
   }
 
-  @SubscribeMessage('sendMessage')
-  async handleSendMessage(
-    client: Socket,
-    data: { roomId: string; message: string },
-  ) {
-    await this.chatService.handleSendMessage(
-      client,
-      data.roomId,
-      data.message,
-      this.userID,
-      this.server,
-    );
-  }
+  // @SubscribeMessage('sendMessage')
+  // async handleSendMessage(
+  //   client: Socket,
+  //   data: { roomId: string; message: string },
+  // ) {
+  //   await this.chatService.handleSendMessage(
+  //     client,
+  //     data.roomId,
+  //     data.message,
+  //     this.userID,
+  //     this.server,
+  //   );
+  // }
 
   @SubscribeMessage('sendDirectMessage')
   async handleSendDirectMessage(

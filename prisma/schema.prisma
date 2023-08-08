@@ -50,12 +50,13 @@ model User {
   usersBlockedBy BlockedUser[] @relation("blockedUserBlockedUsers")
 
   friendStatus  String? @default("None")
+  seenMessages  Message[]
 }
 
 model Room {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  lastMessageAt DateTime @default(now())
 
   name      String?
   isPrivate Boolean?
@@ -79,14 +80,16 @@ model Message {
 
   content String
 
-  room   Room @relation(fields: [roomID], references: [id])
-  roomID Int
+  room   Room @relation(fields: [roomID], references: [uid])
+  roomID String
 
   sender   User @relation(name: "sender", fields: [senderID], references: [id])
   senderID Int
 
   reciever   User? @relation(name: "reciever", fields: [recieverID], references: [id])
   recieverID Int?
+
+  seen     User[]
 }
 
 model FriendRequest {
