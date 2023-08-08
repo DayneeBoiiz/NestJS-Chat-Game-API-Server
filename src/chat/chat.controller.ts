@@ -23,22 +23,45 @@ export class ChatController {
     const { userID, password, isProtected, isPrivate, isGroup, members, name } =
       data;
 
-    // console.log(userID);
-    // console.log(isGroup);
-    // console.log(members);
-    // console.log(name);
-
-    // this.chatService.handleCreateRoom(data.roomName, user.id);
-
     try {
       if (isGroup) {
-        // this.chatService.createGroupRoom(name, members);
-      } else if (isPrivate) {
-        // this.chatService.createPrivateRoom(name, members);
+        return this.chatService.createGroupRoom(name, members, user.id);
       } else if (isProtected) {
-        // this.chatService.createProtectedRoom(name, members, password);
+        return this.chatService.createProtectedRoom(
+          name,
+          members,
+          password,
+          user.id,
+        );
+      } else if (isPrivate) {
+        return this.chatService.createPrivateRoom(name, members, user.id);
       } else {
         return this.chatService.handleCreateRoom(userID, user.id);
+      }
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  @Get('my-rooms')
+  async handleGetMyRooms(@GetUser() user: User) {
+    try {
+      return await this.chatService.handleGetMyRooms(user.id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get(':roomtype')
+  async handleGetRooms(@Param('roomtype') roomType: string) {
+    try {
+      if (roomType === 'isGroup') {
+        return await this.chatService.getPublicRooms();
+      } else if (roomType === 'isProtected') {
+        return await this.chatService.getProtectedRooms();
+      } else if (roomType === 'isPrivate') {
+        return await this.chatService.getPrivateRooms();
       }
     } catch (error) {
       console.log(error);

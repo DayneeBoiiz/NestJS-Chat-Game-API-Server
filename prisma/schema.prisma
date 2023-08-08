@@ -58,8 +58,10 @@ model Room {
   createdAt DateTime @default(now())
   lastMessageAt DateTime @default(now())
 
-  name      String?
+  name      String? @unique
   isPrivate Boolean?
+  isPrivateKey String? @unique
+  isProtected Boolean?
   isGroup   Boolean?
   password  String?
 
@@ -67,7 +69,7 @@ model Room {
   admins User[] @relation("AdminRooms")
 
   owner   User? @relation(name: "roomOwner", fields: [ownerID], references: [id])
-  ownerID Int?  @unique
+  ownerID Int?
 
   users    User[]
   messages Message[]
