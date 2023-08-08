@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { ChatService } from './chat.service';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
@@ -32,6 +40,35 @@ export class ChatController {
       } else {
         return this.chatService.handleCreateRoom(userID, user.id);
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get(':roomid/messages')
+  async handleGetRoomMessages(@Param('roomid') roomId: string) {
+    try {
+      return await this.chatService.handleGetRoomMessages(roomId);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Post('send-message')
+  async handleSendMessage(@GetUser() user: User, @Body() data: any) {
+    try {
+      const { RoomId, message } = data;
+
+      return await this.chatService.handleSendMessage(user.id, RoomId, message);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get('my-chats')
+  async handleGetMyChats(@GetUser() user: User) {
+    try {
+      return await this.chatService.handleGetMyChats(user.id);
     } catch (error) {
       console.log(error);
     }

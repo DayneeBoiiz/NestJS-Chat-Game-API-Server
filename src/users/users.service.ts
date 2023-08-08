@@ -92,9 +92,6 @@ export class UsersService {
         throw new Error('Cannot remove yourself');
       }
 
-      console.log(user.id);
-      console.log(friend.id);
-
       const firstFriendship = await this.prisma.friend.findFirst({
         where: {
           sentByID: user.id,

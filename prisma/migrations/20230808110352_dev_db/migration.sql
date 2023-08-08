@@ -8,8 +8,11 @@ CREATE TABLE "User" (
     "hash" TEXT NOT NULL,
     "TwofaAutSecret" TEXT,
     "TwofaAutEnabled" BOOLEAN DEFAULT false,
+    "FirstLogin" BOOLEAN DEFAULT true,
     "avatarUrl" TEXT DEFAULT 'default_avatar.png',
     "state" TEXT NOT NULL DEFAULT 'offline',
+    "provider" TEXT,
+    "friendStatus" TEXT DEFAULT 'None',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -18,11 +21,13 @@ CREATE TABLE "User" (
 CREATE TABLE "Room" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "name" TEXT NOT NULL,
-    "isPrivate" BOOLEAN NOT NULL,
+    "lastMessageAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "name" TEXT,
+    "isPrivate" BOOLEAN,
+    "isGroup" BOOLEAN,
     "password" TEXT,
-    "ownerID" INTEGER NOT NULL,
+    "uid" TEXT,
+    "ownerID" INTEGER,
 
     CONSTRAINT "Room_pkey" PRIMARY KEY ("id")
 );
@@ -33,7 +38,7 @@ CREATE TABLE "Message" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "content" TEXT NOT NULL,
-    "roomID" INTEGER NOT NULL,
+    "roomID" TEXT NOT NULL,
     "senderID" INTEGER NOT NULL,
     "recieverID" INTEGER,
 
@@ -47,6 +52,7 @@ CREATE TABLE "FriendRequest" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "senderID" INTEGER NOT NULL,
     "recipientID" INTEGER NOT NULL,
+    "friendRequestStatus" TEXT NOT NULL DEFAULT 'Pending',
 
     CONSTRAINT "FriendRequest_pkey" PRIMARY KEY ("id")
 );
@@ -76,7 +82,7 @@ CREATE TABLE "BlockedUser" (
 -- CreateTable
 CREATE TABLE "BlockedTokens" (
     "id" SERIAL NOT NULL,
-    "createdAT" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "token" TEXT,
 
@@ -95,11 +101,20 @@ CREATE TABLE "_RoomToUser" (
     "B" INTEGER NOT NULL
 );
 
+-- CreateTable
+CREATE TABLE "_MessageToUser" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_nickname_key" ON "User"("nickname");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Room_uid_key" ON "Room"("uid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Room_ownerID_key" ON "Room"("ownerID");
@@ -125,11 +140,17 @@ CREATE UNIQUE INDEX "_RoomToUser_AB_unique" ON "_RoomToUser"("A", "B");
 -- CreateIndex
 CREATE INDEX "_RoomToUser_B_index" ON "_RoomToUser"("B");
 
--- AddForeignKey
-ALTER TABLE "Room" ADD CONSTRAINT "Room_ownerID_fkey" FOREIGN KEY ("ownerID") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "_MessageToUser_AB_unique" ON "_MessageToUser"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_MessageToUser_B_index" ON "_MessageToUser"("B");
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "Room"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Room" ADD CONSTRAINT "Room_ownerID_fkey" FOREIGN KEY ("ownerID") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_roomID_fkey" FOREIGN KEY ("roomID") REFERENCES "Room"("uid") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_senderID_fkey" FOREIGN KEY ("senderID") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -166,3 +187,9 @@ ALTER TABLE "_RoomToUser" ADD CONSTRAINT "_RoomToUser_A_fkey" FOREIGN KEY ("A") 
 
 -- AddForeignKey
 ALTER TABLE "_RoomToUser" ADD CONSTRAINT "_RoomToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_MessageToUser" ADD CONSTRAINT "_MessageToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Message"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_MessageToUser" ADD CONSTRAINT "_MessageToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
