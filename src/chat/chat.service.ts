@@ -1,7 +1,13 @@
-import { Injectable, Req, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import * as argon from 'argon2';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -199,42 +205,223 @@ export class ChatService {
     }
   }
 
-  // async handleSendMessage(
-  //   client: Socket,
-  //   roomId: string,
-  //   message: string,
-  //   userID: number,
-  //   server: Server,
-  // ) {
-  //   const roomID = parseInt(roomId, 10);
+  uniqueCode = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const codeLength = 6;
 
-  //   const chatRoom = await this.prisma.room.findUnique({
-  //     where: {
-  //       id: roomID,
-  //     },
-  //   });
+    const code = Array.from(
+      { length: codeLength },
+      () => characters[Math.floor(Math.random() * characters.length)],
+    ).join('');
+    return code;
+  };
 
-  //   if (chatRoom) {
-  //     const createdMessage = await this.prisma.message.create({
-  //       data: {
-  //         content: message,
-  //         room: {
-  //           connect: {
-  //             id: roomID,
-  //           },
-  //         },
-  //         sender: {
-  //           connect: {
-  //             id: userID,
-  //           },
-  //         },
-  //       },
-  //     });
-  //     server.to(`room:${roomID}`).emit('message', createdMessage);
-  //   } else {
-  //     client.emit('roomError', { message: 'Chat room not found' });
-  //   }
-  // }
+  async createPrivateRoom(name: string, members: number[], userID: number) {
+    try {
+      if (!name) {
+        throw Error('A name is needed for group chat');
+      }
+
+      const existingRoom = await this.prisma.room.findFirst({
+        where: {
+          name,
+        },
+      });
+
+      if (existingRoom) {
+        throw new Error('A room with this name already exists');
+      }
+
+      const room = await this.prisma.room.create({
+        data: {
+          name: name,
+          uid: uuidv4(),
+          isPrivate: true,
+          isPrivateKey: this.uniqueCode(),
+          ownerID: userID,
+          admins: {
+            connect: {
+              id: userID,
+            },
+          },
+          users: {
+            connect: {
+              id: userID,
+            },
+          },
+        },
+        include: {
+          admins: true,
+          users: true,
+        },
+      });
+
+      if (members && members.length > 0) {
+        const users = await this.prisma.user.findMany({
+          where: {
+            id: {
+              in: members,
+            },
+          },
+        });
+
+        await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            users: {
+              connect: users.map((user) => ({ id: user.id })),
+            },
+          },
+        });
+      }
+
+      return room;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  async createProtectedRoom(
+    name: string,
+    members: number[],
+    password: string,
+    userID: number,
+  ) {
+    try {
+      if (!name || !password) {
+        throw Error('A name / password is needed for private chat');
+      }
+
+      const existingRoom = await this.prisma.room.findFirst({
+        where: {
+          name,
+        },
+      });
+
+      if (existingRoom) {
+        throw new Error('A room with this name already exists');
+      }
+
+      const hash = await argon.hash(password);
+
+      const room = await this.prisma.room.create({
+        data: {
+          name: name,
+          uid: uuidv4(),
+          isProtected: true,
+          ownerID: userID,
+          password: hash,
+          admins: {
+            connect: {
+              id: userID,
+            },
+          },
+          users: {
+            connect: {
+              id: userID,
+            },
+          },
+        },
+        include: {
+          admins: true,
+          users: true,
+        },
+      });
+
+      if (members && members.length > 0) {
+        const users = await this.prisma.user.findMany({
+          where: {
+            id: {
+              in: members,
+            },
+          },
+        });
+
+        await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            users: {
+              connect: users.map((user) => ({ id: user.id })),
+            },
+          },
+        });
+      }
+
+      return room;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  async createGroupRoom(name: string, members: number[], userID: number) {
+    try {
+      if (!name) {
+        throw Error('A name is needed for group chat');
+      }
+
+      const existingRoom = await this.prisma.room.findFirst({
+        where: {
+          name,
+        },
+      });
+
+      if (existingRoom) {
+        throw new Error('A room with this name already exists');
+      }
+
+      const room = await this.prisma.room.create({
+        data: {
+          name: name,
+          uid: uuidv4(),
+          isGroup: true,
+          ownerID: userID,
+          admins: {
+            connect: {
+              id: userID,
+            },
+          },
+          users: {
+            connect: {
+              id: userID,
+            },
+          },
+        },
+        include: {
+          admins: true,
+          users: true,
+        },
+      });
+
+      if (members && members.length > 0) {
+        const users = await this.prisma.user.findMany({
+          where: {
+            id: {
+              in: members,
+            },
+          },
+        });
+
+        await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            users: {
+              connect: users.map((user) => ({ id: user.id })),
+            },
+          },
+        });
+      }
+
+      return room;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
 
   async handleCreateRoom(otherUser: number, userID: number) {
     try {
@@ -401,6 +588,105 @@ export class ChatService {
       return rooms;
     } catch (error) {
       return error;
+    }
+  }
+
+  async getPublicRooms() {
+    try {
+      const publicRooms = await this.prisma.room.findMany({
+        where: {
+          isGroup: true,
+        },
+        include: {
+          owner: true,
+          users: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (!publicRooms) {
+        throw new NotFoundException('No Rooms Found');
+      }
+
+      return publicRooms;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  async getProtectedRooms() {
+    try {
+      const protectedRooms = await this.prisma.room.findMany({
+        where: {
+          isProtected: true,
+        },
+        include: {
+          owner: true,
+          users: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (!protectedRooms) {
+        throw new NotFoundException('No Rooms Found');
+      }
+
+      return protectedRooms;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  async getPrivateRooms() {
+    try {
+      const privateRooms = await this.prisma.room.findMany({
+        where: {
+          isPrivate: true,
+        },
+        include: {
+          owner: true,
+          users: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (!privateRooms) {
+        throw new NotFoundException('No Rooms Found');
+      }
+
+      return privateRooms;
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  async handleGetMyRooms(userID: number) {
+    try {
+      const myRooms = await this.prisma.room.findMany({
+        where: {
+          ownerID: userID,
+        },
+        include: {
+          users: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (!myRooms) {
+        throw new NotFoundException('No Rooms Found');
+      }
+
+      return myRooms;
+    } catch (error) {
+      return { error: error.message };
     }
   }
 }
