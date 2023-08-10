@@ -68,14 +68,23 @@ export class UsersController {
     @GetUser() user: User,
     @Body() usernamedto: UsernameDto,
   ) {
-    await this.userService.changeUsername(user, usernamedto);
+    try {
+      return await this.userService.changeUsername(user, usernamedto);
+    } catch (error) {
+      console.log(error);
+      return { error: error.message };
+    }
   }
 
   @Patch('me/settings/new-password')
   async changePass(@GetUser() user: User, @Body() newpassdto: NewPassDto) {
-    const isPassValid = await this.userService.isPassValid(newpassdto, user);
-    if (!isPassValid) throw new ForbiddenException('incorrect password');
-    await this.userService.setNewPass(newpassdto, user);
+    try {
+      const isPassValid = await this.userService.isPassValid(newpassdto, user);
+      if (!isPassValid) throw new ForbiddenException('incorrect password');
+      return await this.userService.setNewPass(newpassdto, user);
+    } catch (error) {
+      return error.message;
+    }
   }
 
   @Get('all-users')

@@ -574,38 +574,63 @@ export class UsersService {
   }
 
   async isPassValid(newpassdto: NewPassDto, user: User) {
-    const verify = await argon.verify(user.hash, newpassdto.password);
-    if (verify) return true;
-    return false;
+    const { password, new_password } = newpassdto;
+
+    const me = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+    });
+    const isOldPassValid = await argon.verify(me.hash, password);
+    if (!isOldPassValid) {
+      throw new Error('Invalid current password.');
+    }
+
+    if (password === new_password) {
+      throw new Error('New password must be different from the old password.');
+    }
+
+    return true;
   }
 
   async setNewPass(newpassdto: NewPassDto, user: User) {
-    const hash = await argon.hash(newpassdto.new_password);
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        hash: hash,
-      },
-    });
+    try {
+      const hash = await argon.hash(newpassdto.new_password);
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          hash: hash,
+        },
+      });
+
+      return { Message: 'Password Changed' };
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async changeUsername(user: User, usernamedto: UsernameDto) {
-    const exist = await this.prisma.user.findUnique({
-      where: {
-        nickname: usernamedto.nickname,
-      },
-    });
-    if (exist) throw new ConflictException('username already taken');
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        nickname: usernamedto.nickname,
-      },
-    });
+    try {
+      const exist = await this.prisma.user.findUnique({
+        where: {
+          nickname: usernamedto.nickname,
+        },
+      });
+      if (exist) throw new ConflictException('username already taken');
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          nickname: usernamedto.nickname,
+        },
+      });
+      return { Message: 'Username Changed' };
+    } catch (error) {
+      throw Error(error);
+    }
   }
 
   async handleBlockUser(userID: number, blockedUserName: string) {

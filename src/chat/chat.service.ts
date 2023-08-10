@@ -641,28 +641,38 @@ export class ChatService {
     }
   }
 
-  async getPrivateRooms() {
+  // async getPrivateRooms() {
+  //   try {
+  //     const privateRooms = await this.prisma.room.findMany({
+  //       where: {
+  //         isPrivate: true,
+  //       },
+  //       include: {
+  //         owner: true,
+  //         users: true,
+  //       },
+  //       orderBy: {
+  //         createdAt: 'desc',
+  //       },
+  //     });
+
+  //     if (!privateRooms) {
+  //       throw new NotFoundException('No Rooms Found');
+  //     }
+
+  //     return privateRooms;
+  //   } catch (error) {
+  //     return { error: error.message };
+  //   }
+  // }
+
+  async joinPublicRoom(conversationdID: string, userID: number) {
     try {
-      const privateRooms = await this.prisma.room.findMany({
-        where: {
-          isPrivate: true,
-        },
-        include: {
-          owner: true,
-          users: true,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
 
-      if (!privateRooms) {
-        throw new NotFoundException('No Rooms Found');
-      }
+      
 
-      return privateRooms;
     } catch (error) {
-      return { error: error.message };
+      throw Error(error);
     }
   }
 
