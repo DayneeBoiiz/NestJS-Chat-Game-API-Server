@@ -44,6 +44,31 @@ export class ChatController {
     }
   }
 
+  @Post('join-room')
+  async handleJoinRoom(@GetUser() user: User, @Body() data: any) {
+    const {
+      conversationdId,
+      isProtected,
+      isPrivate,
+      isGroup,
+      roomKey,
+      password,
+    } = data;
+
+    try {
+      if (isGroup) {
+        return await this.chatService.joinPublicRoom(conversationdId, user.id);
+      } else if (isPrivate) {
+        // return await this.chatService.joinPrivateRoom(user.id, roomKey);
+      } else if (isProtected) {
+        // return await this.chatService.joinProtectedRoom(conversationdId, user.id, password);
+      }
+    } catch (error) {
+      console.log(error);
+      return { error: error.message };
+    }
+  }
+
   @Get('my-rooms')
   async handleGetMyRooms(@GetUser() user: User) {
     try {
@@ -61,7 +86,7 @@ export class ChatController {
       } else if (roomType === 'isProtected') {
         return await this.chatService.getProtectedRooms();
       } else if (roomType === 'isPrivate') {
-        return await this.chatService.getPrivateRooms();
+        // return await this.chatService.getPrivateRooms();
       }
     } catch (error) {
       console.log(error);
