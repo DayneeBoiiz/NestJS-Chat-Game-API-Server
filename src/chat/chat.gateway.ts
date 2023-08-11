@@ -31,10 +31,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //   await this.chatService.handleCreateRoom(client, roomName, this.userID);
   // }
 
-  @SubscribeMessage('leaveRoom')
-  async handleLeaveRoom(client: Socket, roomId: string) {
-    await this.chatService.handleLeaveRoom(client, roomId, this.userID);
-  }
+  // @SubscribeMessage('leaveRoom')
+  // async handleLeaveRoom(client: Socket, roomId: string) {
+  //   await this.chatService.handleLeaveRoom(client, roomId, this.userID);
+  // }
 
   @SubscribeMessage('deleteRoom')
   async handleDeleteRoom(client: Socket, roomId: string) {

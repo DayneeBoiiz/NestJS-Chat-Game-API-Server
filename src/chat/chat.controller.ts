@@ -45,6 +45,18 @@ export class ChatController {
     }
   }
 
+  @Post('leave-room')
+  async handleLeaveRoom(@GetUser() user: User, @Body() data: any) {
+    const { conversationdId } = data;
+
+    try {
+      return await this.chatService.handleLeaveRoom(conversationdId, user.id);
+    } catch (error) {
+      console.log(error);
+      return { error: error.message };
+    }
+  }
+
   @Post('join-room')
   async handleJoinRoom(@GetUser() user: User, @Body() data: any) {
     const {
@@ -60,9 +72,13 @@ export class ChatController {
       if (isGroup) {
         return await this.chatService.joinPublicRoom(conversationdId, user.id);
       } else if (isPrivate) {
-        // return await this.chatService.joinPrivateRoom(user.id, roomKey);
+        return await this.chatService.joinPrivateRoom(user.id, roomKey);
       } else if (isProtected) {
-        // return await this.chatService.joinProtectedRoom(conversationdId, user.id, password);
+        return await this.chatService.joinProtectedRoom(
+          conversationdId,
+          user.id,
+          password,
+        );
       }
     } catch (error) {
       console.log(error);
