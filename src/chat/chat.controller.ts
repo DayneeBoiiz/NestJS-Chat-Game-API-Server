@@ -12,6 +12,7 @@ import { ChatService } from './chat.service';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guard';
+import { MessageInputDto } from './dto/message.dto';
 
 @UseGuards(JwtGuard)
 @Controller('chat')
@@ -103,7 +104,10 @@ export class ChatController {
   }
 
   @Post('send-message')
-  async handleSendMessage(@GetUser() user: User, @Body() data: any) {
+  async handleSendMessage(
+    @GetUser() user: User,
+    @Body() data: MessageInputDto,
+  ) {
     try {
       const { RoomId, message } = data;
 

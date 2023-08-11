@@ -668,9 +668,6 @@ export class ChatService {
 
   async joinPublicRoom(conversationdID: string, userID: number) {
     try {
-
-      
-
     } catch (error) {
       throw Error(error);
     }
