@@ -10,6 +10,7 @@ import { ChatGateway } from './chat/chat.gateway';
 import { ChatService } from './chat/chat.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat/chat.controller';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ChatController } from './chat/chat.controller';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
     }),
+    GameModule,
   ],
   controllers: [TwoFactorAuthenticationController, ChatController],
   providers: [

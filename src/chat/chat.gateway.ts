@@ -19,7 +19,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private chatService: ChatService) {}
 
   async handleConnection(client: Socket) {
-    this.userID = await this.chatService.extractUserId(client);
+    // this.userID = await this.chatService.extractUserId(client);
     console.log(`Client connected: ${client.id}`);
   }
   async handleDisconnect(client: Socket) {
@@ -36,16 +36,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //   await this.chatService.handleLeaveRoom(client, roomId, this.userID);
   // }
 
-  @SubscribeMessage('deleteRoom')
-  async handleDeleteRoom(client: Socket, roomId: string) {
-    await this.chatService.handleDeleteRoom(client, roomId, this.server);
-  }
+  // @SubscribeMessage('deleteRoom')
+  // async handleDeleteRoom(client: Socket, roomId: string) {
+  //   await this.chatService.handleDeleteRoom(client, roomId, this.server);
+  // }
 
-  @SubscribeMessage('joinRoom')
-  async handleJoinRoom(client: Socket, roomId: string) {
-    this.userID = await this.chatService.extractUserId(client);
-    await this.chatService.handleJoinRoom(client, roomId, this.userID);
-  }
+  // @SubscribeMessage('joinRoom')
+  // async handleJoinRoom(client: Socket, roomId: string) {
+  //   this.userID = await this.chatService.extractUserId(client);
+  //   await this.chatService.handleJoinRoom(client, roomId, this.userID);
+  // }
 
   // @SubscribeMessage('sendMessage')
   // async handleSendMessage(
@@ -61,12 +61,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //   );
   // }
 
-  @SubscribeMessage('sendDirectMessage')
-  async handleSendDirectMessage(
-    client: Socket,
-    data: { recieverID: string; message: string },
-  ) {
-    console.log(data.recieverID);
-    console.log(data.message);
-  }
+  // @SubscribeMessage('sendDirectMessage')
+  // async handleSendDirectMessage(
+  //   client: Socket,
+  //   data: { recieverID: string; message: string },
+  // ) {
+  //   console.log(data.recieverID);
+  //   console.log(data.message);
+  // }
 }

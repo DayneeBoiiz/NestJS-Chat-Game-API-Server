@@ -219,77 +219,77 @@ export class ChatService {
   //   }
   // }
 
-  async handleDeleteRoom(client: Socket, roomId: string, server: Server) {
-    const roomID = parseInt(roomId, 10);
+  // async handleDeleteRoom(client: Socket, roomId: string, server: Server) {
+  //   const roomID = parseInt(roomId, 10);
 
-    try {
-      await this.prisma.room.delete({
-        where: {
-          id: roomID,
-        },
-        include: {
-          messages: true,
-        },
-      });
+  //   try {
+  //     await this.prisma.room.delete({
+  //       where: {
+  //         id: roomID,
+  //       },
+  //       include: {
+  //         messages: true,
+  //       },
+  //     });
 
-      server.to(`room:${roomID}`).emit('roomDeleted');
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //     server.to(`room:${roomID}`).emit('roomDeleted');
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
-  async extractUserIdFromHeader(@Req() req: Request) {
-    const token = req.headers.authorization;
-    // console.log(token);
+  // async extractUserIdFromHeader(@Req() req: Request) {
+  //   const token = req.headers.authorization;
+  //   // console.log(token);
 
-    try {
-      const decoded = this.jwtService.verify(token.replace('Bearer ', ''));
-      const userId = decoded.sub;
-      return userId;
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //   try {
+  //     const decoded = this.jwtService.verify(token.replace('Bearer ', ''));
+  //     const userId = decoded.sub;
+  //     return userId;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
-  async extractUserId(client: Socket) {
-    const token = client.handshake.headers.authorization;
+  // async extractUserId(client: Socket) {
+  //   const token = client.handshake.headers.authorization;
 
-    try {
-      const decoded = this.jwtService.verify(token.replace('bearer ', ''));
-      const userId = decoded.sub;
-      return userId;
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //   try {
+  //     const decoded = this.jwtService.verify(token.replace('bearer ', ''));
+  //     const userId = decoded.sub;
+  //     return userId;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
-  async handleJoinRoom(client: Socket, roomId: string, userID: number) {
-    const roomID = parseInt(roomId, 10);
+  // async handleJoinRoom(client: Socket, roomId: string, userID: number) {
+  //   const roomID = parseInt(roomId, 10);
 
-    const chatRoom = await this.prisma.room.findUnique({
-      where: {
-        id: roomID,
-      },
-    });
-    if (chatRoom) {
-      await this.prisma.room.update({
-        where: {
-          id: roomID,
-        },
-        data: {
-          users: {
-            connect: {
-              id: userID,
-            },
-          },
-        },
-      });
-      client.join(`room:${roomID}`);
-      client.emit(`roomJoined`);
-    } else {
-      console.log('Room not Found');
-    }
-  }
+  //   const chatRoom = await this.prisma.room.findUnique({
+  //     where: {
+  //       id: roomID,
+  //     },
+  //   });
+  //   if (chatRoom) {
+  //     await this.prisma.room.update({
+  //       where: {
+  //         id: roomID,
+  //       },
+  //       data: {
+  //         users: {
+  //           connect: {
+  //             id: userID,
+  //           },
+  //         },
+  //       },
+  //     });
+  //     client.join(`room:${roomID}`);
+  //     client.emit(`roomJoined`);
+  //   } else {
+  //     console.log('Room not Found');
+  //   }
+  // }
 
   uniqueCode = () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -519,6 +519,9 @@ export class ChatService {
               users: { some: { id: userID } },
             },
           ],
+          isGroup: null,
+          isProtected: null,
+          isPrivate: null,
         },
         include: {
           users: true,
@@ -659,6 +662,9 @@ export class ChatService {
               id: userID,
             },
           },
+          isGroup: null,
+          isPrivate: null,
+          isProtected: null,
         },
         include: {
           users: true,

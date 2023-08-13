@@ -38,7 +38,6 @@ model User {
   opedroom  Room[] @relation("AdminRooms")
 
   SentMessage     Message[] @relation("sender")
-  recievedMessage Message[] @relation("reciever")
 
   sentFriendRequests     FriendRequest[] @relation("SentFriendRequest")
   receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequest")
@@ -51,6 +50,10 @@ model User {
 
   friendStatus  String? @default("None")
   seenMessages  Message[]
+
+  matchesAsPlayer1 Match[] @relation("Player1Matches")
+  matchesAsPlayer2 Match[] @relation("Player2Matches")
+  matchesAsWinner Match[] @relation("WinnerMatches")
 }
 
 model Room {
@@ -87,9 +90,6 @@ model Message {
 
   sender   User @relation(name: "sender", fields: [senderID], references: [id])
   senderID Int
-
-  reciever   User? @relation(name: "reciever", fields: [recieverID], references: [id])
-  recieverID Int?
 
   seen     User[]
 }
@@ -138,4 +138,21 @@ model BlockedTokens {
   updatedAt DateTime @updatedAt
 
   token String? @unique
+}
+
+model Match {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player1   User    @relation("Player1Matches", fields: [player1Id], references: [id])
+  player1Id Int
+
+  player2   User    @relation("Player2Matches", fields: [player2Id], references: [id])
+  player2Id Int
+
+  winner    User?   @relation("WinnerMatches", fields: [winnerId], references: [id])
+  winnerId  Int?
+
+  score     String
 }
