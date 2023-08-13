@@ -1,8 +1,10 @@
 import {
+  Inject,
   Injectable,
   NotFoundException,
   Req,
   UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
@@ -10,12 +12,15 @@ import { v4 as uuidv4 } from 'uuid';
 import * as argon from 'argon2';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly chatGatway: ChatGateway,
   ) {}
 
   async handleSetAdmin(roomId: number, userId: number, requestingUser: number) {
@@ -643,6 +648,16 @@ export class ChatService {
       if (!updatedRoom) {
         throw Error('Error updating room');
       }
+
+      const eventPayload = {
+        content: newMessage.content,
+        sender: newMessage.sender,
+        seen: newMessage.seen,
+      };
+
+      this.chatGatway.server
+        .to(conversationdId)
+        .emit('message:new', eventPayload);
 
       return newMessage;
     } catch (error) {
