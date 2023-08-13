@@ -95,7 +95,7 @@ export class ChatController {
     }
   }
 
-  @Get(':roomtype')
+  @Get(':roomtype/all')
   async handleGetRooms(@Param('roomtype') roomType: string) {
     try {
       if (roomType === 'isGroup') {
@@ -105,6 +105,15 @@ export class ChatController {
       } else if (roomType === 'isPrivate') {
         // return await this.chatService.getPrivateRooms();
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get('my-chats')
+  async handleGetMyChats(@GetUser() user: User) {
+    try {
+      return await this.chatService.handleGetMyChats(user.id);
     } catch (error) {
       console.log(error);
     }
@@ -133,30 +142,15 @@ export class ChatController {
     }
   }
 
-  @Get('my-chats')
-  async handleGetMyChats(@GetUser() user: User) {
-    try {
-      return await this.chatService.handleGetMyChats(user.id);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  @Post('setadmin')
-  async handleSetAdmin(
-    @Req() req: Request,
-    @Body() data: { roomId: number; userId: number },
-  ) {
-    const requestingUser = parseInt(
-      await this.chatService.extractUserIdFromHeader(req),
-      10,
-    );
-
-    console.log(data.roomId, data.userId);
-    await this.chatService.handleSetAdmin(
-      data.roomId,
-      data.userId,
-      requestingUser,
-    );
-  }
+  // @Post('setadmin')
+  // async handleSetAdmin(
+  //   @Req() req: Request,
+  //   @Body() data: { roomId: number; userId: number },
+  // ) {
+  //   await this.chatService.handleSetAdmin(
+  //     data.roomId,
+  //     data.userId,
+  //     requestingUser,
+  //   );
+  // }
 }
