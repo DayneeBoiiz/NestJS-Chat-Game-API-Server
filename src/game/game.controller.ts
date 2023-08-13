@@ -9,5 +9,9 @@ import { User } from '@prisma/client';
 @UseGuards(JwtGuard)
 @Controller('game')
 export class GameController {
-  constructor(private gameService: GameService) {}
+  constructor(private gameService: GameService) {
+
+    
+
+  }
 }

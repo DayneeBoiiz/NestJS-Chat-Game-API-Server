@@ -3,7 +3,3 @@ export type UserDetails = {
   login: string;
   avatrURL: string;
 };
-
-export interface Request {
-  user: any;
-}
