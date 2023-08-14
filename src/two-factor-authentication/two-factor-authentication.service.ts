@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { User } from '@prisma/client';
 import { Response } from 'express';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
@@ -36,5 +37,33 @@ export class TwoFactorAuthenticationService {
 
   public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
     return toFileStream(stream, otpauthUrl);
+  }
+
+  async turnOnTfa(user: User) {
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+
+      data: {
+        TwofaAutEnabled: true,
+      },
+    });
+
+    return { message: '2fa enabled' };
+  }
+
+  async turnOffTfa(user: User) {
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+
+      data: {
+        TwofaAutEnabled: false,
+      },
+    });
+
+    return { message: '2fa disabled' };
   }
 }

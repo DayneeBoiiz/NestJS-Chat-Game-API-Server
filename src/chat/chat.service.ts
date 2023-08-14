@@ -365,6 +365,10 @@ export class ChatService {
               connect: users.map((user) => ({ id: user.id })),
             },
           },
+          include: {
+            admins: true,
+            users: true,
+          },
         });
       }
 
@@ -439,6 +443,10 @@ export class ChatService {
               connect: users.map((user) => ({ id: user.id })),
             },
           },
+          include: {
+            admins: true,
+            users: true,
+          },
         });
       }
 
@@ -482,7 +490,6 @@ export class ChatService {
           },
         },
         include: {
-          admins: true,
           users: true,
         },
       });
@@ -504,6 +511,9 @@ export class ChatService {
             users: {
               connect: users.map((user) => ({ id: user.id })),
             },
+          },
+          include: {
+            users: true,
           },
         });
       }
@@ -556,6 +566,7 @@ export class ChatService {
             messages: true,
           },
         });
+
         return newRoom;
       }
     } catch (error) {
