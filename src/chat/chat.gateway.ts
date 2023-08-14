@@ -20,8 +20,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  userID: any;
-
   constructor(private chatService: ChatService) {}
 
   async handleConnection(client: Socket, ...args: any[]) {
@@ -35,7 +33,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinRoom')
   handleJoinRoom(client: Socket, data: { conversationId: string }) {
     const { conversationId } = data;
-
     client.join(conversationId);
   }
 

@@ -15,6 +15,8 @@ import { Request, Response } from 'express';
 import * as speakeasy from 'speakeasy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { GetUser } from 'src/auth/decorator/getUser.decorator';
+import { User } from '@prisma/client';
 
 @Controller('2fa')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -60,30 +62,16 @@ export class TwoFactorAuthenticationController {
     // console.log(secret);
   }
 
-  @Post('change')
+  @Post('enable')
   @UseGuards(JwtGuard)
-  async change(@Req() req) {
-    if (req.user.TwofaAutEnabled === true) {
-      await this.prisma.user.update({
-        where: {
-          id: req.user.id,
-        },
-        data: {
-          TwofaAutEnabled: false,
-        },
-      });
-    } else if (req.user.TwofaAutEnabled === false) {
-      // console.log('Hello World');
-      await this.prisma.user.update({
-        where: {
-          id: req.user.id,
-        },
-        data: {
-          TwofaAutEnabled: true,
-        },
-      });
-    }
-    // console.log(req);
+  async turnOnTfa(@GetUser() user: User) {
+    return await this.twoFactorAuthService.turnOnTfa(user);
+  }
+
+  @Post('disable')
+  @UseGuards(JwtGuard)
+  async turnOffTfa(@GetUser() user: User) {
+    return await this.twoFactorAuthService.turnOffTfa(user);
   }
 
   @Get('status')
