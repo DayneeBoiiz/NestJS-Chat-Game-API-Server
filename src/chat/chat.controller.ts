@@ -142,6 +142,18 @@ export class ChatController {
     }
   }
 
+  @Get('channel/:roomuid/details')
+  async haneleGetChannelDetails(
+    @GetUser() user: User,
+    @Param('roomuid') roomUid: string,
+  ) {
+    try {
+      return await this.chatService.handleGetChannelDetails(user.id, roomUid);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   // @Post('setadmin')
   // async handleSetAdmin(
   //   @Req() req: Request,
