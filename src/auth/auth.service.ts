@@ -48,12 +48,32 @@ export class AuthService {
         },
       });
 
+      const isFirstLogin = NewUser.FirstLogin;
+      const returnBoolean = isFirstLogin;
+
+      if (isFirstLogin) {
+        await this.prisma.user.update({
+          where: { id: NewUser.id },
+          data: { FirstLogin: false },
+        });
+      }
+
       const response = await this.signToken(NewUser.id, NewUser.email);
-      return response;
+      return { isFirstLogin: returnBoolean, access_token: response };
+    }
+
+    const isFirstLogin = user.FirstLogin;
+    const returnBoolean = isFirstLogin;
+
+    if (isFirstLogin) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { FirstLogin: false },
+      });
     }
 
     const response = await this.signToken(user.id, user.email);
-    return response;
+    return { isFirstLogin: returnBoolean, access_token: response };
   }
 
   async register(dto: AuthDtoRegister) {

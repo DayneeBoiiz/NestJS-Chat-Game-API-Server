@@ -11,6 +11,7 @@ import { ChatService } from './chat/chat.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat/chat.controller';
 import { GameModule } from './game/game.module';
+import { GlobalGateway } from './global/global.gateway';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { GameModule } from './game/game.module';
     PrismaService,
     TwoFactorAuthenticationService,
     ChatGateway,
+    GlobalGateway,
     ChatService,
   ],
 })

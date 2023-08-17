@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, UseGuards } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UseGuards,
+  forwardRef,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,6 +15,7 @@ import { Response } from 'express';
 import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { NewPassDto, UsernameDto } from 'src/auth/dto';
+import { GlobalGateway } from 'src/global/global.gateway';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +23,8 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    @Inject(forwardRef(() => GlobalGateway))
+    private readonly globalGatway: GlobalGateway,
   ) {
     this.scheduleDataCleanup();
   }
@@ -112,6 +121,9 @@ export class UsersService {
         throw new Error('Friendship not found');
       }
 
+      // console.log(firstFriendship);
+      // console.log(secondFriendship);
+
       await this.prisma.friend.delete({
         where: {
           id: firstFriendship.id,
@@ -123,6 +135,8 @@ export class UsersService {
           id: secondFriendship.id,
         },
       });
+
+      this.globalGatway.server.emit('friend:remove', friend.nickname);
 
       return { message: 'Friend removed' };
     } catch (error) {
@@ -323,12 +337,43 @@ export class UsersService {
         ],
       });
 
+      const friend = await this.prisma.friend.findFirst({
+        where: {
+          sentBy: {
+            id: senderID,
+          },
+        },
+        include: {
+          sentBy: {
+            select: {
+              avatarUrl: true,
+              id: true,
+              nickname: true,
+              email: true,
+              state: true,
+              friendStatus: true,
+            },
+          },
+        },
+      });
+
       // Delete the friend request
       await this.prisma.friendRequest.delete({
         where: {
           id: friendRequest.id,
         },
       });
+
+      const payload = {
+        avatarUrl: friend.sentBy.avatarUrl,
+        id: friend.sentBy.id,
+        nickname: friend.sentBy.nickname,
+        email: friend.sentBy.email,
+        state: friend.sentBy.state,
+        friendStatus: friend.sentBy.friendStatus,
+      };
+
+      this.globalGatway.server.emit('friend:new', payload);
 
       return 'Friend request accepted successfully';
     } catch (error) {
@@ -400,7 +445,13 @@ export class UsersService {
             },
           },
         },
+        include: {
+          sender: true,
+        },
       });
+
+      this.globalGatway.server.emit('friendRequest:new', friendRequest);
+
       return { message: 'Friend request sent' };
     } catch (error) {
       console.log(error);
