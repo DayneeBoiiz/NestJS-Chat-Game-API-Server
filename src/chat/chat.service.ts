@@ -978,4 +978,24 @@ export class ChatService {
       return { error: error.message };
     }
   }
+
+  async handleGetChannelDetails(userID: number, conversationdID: string) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationdID,
+        },
+        include: {
+          users: true,
+          admins: true,
+          owner: true,
+          messages: true,
+        },
+      });
+
+      return room;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
