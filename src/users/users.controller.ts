@@ -140,19 +140,12 @@ export class UsersController {
     // console.log('Sender Username : ', senderUserame);
   }
 
-  @Delete(':username')
+  @Delete('remove-friend/:username')
   async handleRemoveFriend(
     @Param('username') userName: string,
-    @Req() req: Request,
+    @GetUser() user: User,
   ) {
-    const token = req.headers.authorization;
-    const requestingUserID = await this.userService.extratUserIdFromHeader(
-      token,
-    );
-    return await this.userService.handleRemoveFriend(
-      userName,
-      requestingUserID,
-    );
+    return await this.userService.handleRemoveFriend(userName, user.id);
   }
 
   @Post(':username/reject')

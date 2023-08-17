@@ -13,6 +13,7 @@ import * as argon from 'argon2';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatGateway } from './chat.gateway';
+import { GlobalGateway } from 'src/global/global.gateway';
 
 @Injectable()
 export class ChatService {
@@ -21,6 +22,8 @@ export class ChatService {
     private readonly jwtService: JwtService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGatway: ChatGateway,
+    @Inject(forwardRef(() => GlobalGateway))
+    private readonly globalGatway: GlobalGateway,
   ) {}
 
   async handleSetAdmin(roomId: number, userId: number, requestingUser: number) {
@@ -567,6 +570,8 @@ export class ChatService {
           },
         });
 
+        this.globalGatway.server.emit('conversation:new', newRoom);
+
         return newRoom;
       }
     } catch (error) {
@@ -660,6 +665,8 @@ export class ChatService {
         throw Error('Error updating room');
       }
 
+      const lastMessage = updatedRoom.messages[updatedRoom.messages.length - 1];
+
       const eventPayload = {
         content: newMessage.content,
         sender: newMessage.sender,
@@ -669,6 +676,11 @@ export class ChatService {
       this.chatGatway.server
         .to(conversationdId)
         .emit('message:new', eventPayload);
+
+      this.globalGatway.server.emit('conversation:update', {
+        uid: updatedRoom.uid,
+        messages: [lastMessage],
+      });
 
       return newMessage;
     } catch (error) {
@@ -798,7 +810,7 @@ export class ChatService {
       },
     });
 
-    return !!room?.users.length; // Returns true if the user is already in the room, false otherwise
+    return !!room?.users.length;
   }
 
   async joinPublicRoom(conversationdID: string, userID: number) {
