@@ -50,7 +50,7 @@ export class AuthService {
 
       const isFirstLogin = NewUser.FirstLogin;
       const returnBoolean = isFirstLogin;
-      const isTwoFactorEnabled = user.TwofaAutEnabled;
+      const isTwoFactorEnabled = NewUser.TwofaAutEnabled;
 
       if (isFirstLogin) {
         await this.prisma.user.update({
