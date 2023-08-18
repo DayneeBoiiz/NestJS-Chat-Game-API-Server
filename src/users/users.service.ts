@@ -470,6 +470,7 @@ export class UsersService {
         nickname: true,
         avatarUrl: true,
         friendStatus: true,
+        provider: true,
         sentFriendRequests: {
           where: {
             recipientID: userID,
