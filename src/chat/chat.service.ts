@@ -993,6 +993,12 @@ export class ChatService {
         },
       });
 
+      const isMember = await this.isUserInRoom(userID, room.id);
+
+      if (isMember) {
+        throw new Error('User is already a member of the room');
+      }
+
       return room;
     } catch (error) {
       throw new Error(error);

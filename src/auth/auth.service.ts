@@ -50,6 +50,7 @@ export class AuthService {
 
       const isFirstLogin = NewUser.FirstLogin;
       const returnBoolean = isFirstLogin;
+      const isTwoFactorEnabled = user.TwofaAutEnabled;
 
       if (isFirstLogin) {
         await this.prisma.user.update({
@@ -59,11 +60,16 @@ export class AuthService {
       }
 
       const response = await this.signToken(NewUser.id, NewUser.email);
-      return { isFirstLogin: returnBoolean, access_token: response };
+      return {
+        isTwoFactorEnabled: isTwoFactorEnabled,
+        isFirstLogin: returnBoolean,
+        access_token: response,
+      };
     }
 
     const isFirstLogin = user.FirstLogin;
     const returnBoolean = isFirstLogin;
+    const isTwoFactorEnabled = user.TwofaAutEnabled;
 
     if (isFirstLogin) {
       await this.prisma.user.update({
@@ -73,7 +79,11 @@ export class AuthService {
     }
 
     const response = await this.signToken(user.id, user.email);
-    return { isFirstLogin: returnBoolean, access_token: response };
+    return {
+      isTwoFactorEnabled: isTwoFactorEnabled,
+      isFirstLogin: returnBoolean,
+      access_token: response,
+    };
   }
 
   async register(dto: AuthDtoRegister) {
@@ -112,6 +122,7 @@ export class AuthService {
 
     const isFirstLogin = user.FirstLogin;
     const returnBoolean = isFirstLogin;
+    const isTwoFactorEnabled = user.TwofaAutEnabled;
 
     if (isFirstLogin) {
       await this.prisma.user.update({
@@ -123,7 +134,11 @@ export class AuthService {
     await this.userService.onlineState(user);
 
     const access_token = await this.signToken(user.id, user.email);
-    return { isFirstLogin: returnBoolean, access_token: access_token };
+    return {
+      isTwoFactorEnabled: isTwoFactorEnabled,
+      isFirstLogin: returnBoolean,
+      access_token: access_token,
+    };
   }
 
   async signToken(userId: number, email: string): Promise<string> {
