@@ -112,6 +112,10 @@ export class AuthService {
       },
     });
 
+    if (user.provider === 'intra') {
+      throw new UnauthorizedException('This User must use Intra Login');
+    }
+
     if (!user) throw new UnauthorizedException('Invalid email or password');
 
     const isMatch = await argon.verify(user.hash, dto.password);

@@ -23,7 +23,12 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() dto: AuthDtoLogin) {
-    return this.authService.login(dto);
+    try {
+      return this.authService.login(dto);
+    } catch (error) {
+      console.log(error);
+      return { error: error.message };
+    }
   }
 
   @Get('/cookie/login')
