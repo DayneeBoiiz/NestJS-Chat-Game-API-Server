@@ -237,6 +237,5 @@ export class UsersController {
   @Get('logout')
   async logout(@GetUser() user: User, @Token() token) {
     await this.userService.addToBlockedTokens(token);
-    await this.userService.offlineState(user);
   }
 }

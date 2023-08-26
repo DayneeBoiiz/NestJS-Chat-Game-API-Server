@@ -14,6 +14,7 @@ import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatGateway } from './chat.gateway';
 import { GlobalGateway } from 'src/global/global.gateway';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class ChatService {
@@ -692,7 +693,7 @@ export class ChatService {
     try {
       const rooms = await this.prisma.room.findMany({
         orderBy: {
-          lastMessageAt: 'desc',
+          lastMessageAt: 'asc',
         },
         where: {
           users: {
@@ -719,6 +720,31 @@ export class ChatService {
     } catch (error) {
       return error;
     }
+  }
+
+  async getOtherUser(conversationID: string, user: User) {
+    const userID = user.id;
+    const room = await this.prisma.room.findUnique({
+      where: {
+        uid: conversationID,
+      },
+      include: {
+        users: true,
+      },
+    });
+
+    if (!room) {
+      throw new Error('Room not Found');
+    }
+
+    const otherUser = room.users.find((user) => user.id !== userID);
+
+    if (!otherUser) {
+      throw new Error('Other user not found in the conversation');
+    }
+
+    delete otherUser.hash;
+    return otherUser;
   }
 
   async getPublicRooms() {
@@ -959,7 +985,11 @@ export class ChatService {
     try {
       const myRooms = await this.prisma.room.findMany({
         where: {
-          ownerID: userID,
+          users: {
+            some: {
+              id: userID,
+            },
+          },
         },
         include: {
           users: true,
@@ -995,8 +1025,8 @@ export class ChatService {
 
       const isMember = await this.isUserInRoom(userID, room.id);
 
-      if (isMember) {
-        throw new Error('User is already a member of the room');
+      if (!isMember) {
+        throw new Error('User is not a member of the room');
       }
 
       return room;

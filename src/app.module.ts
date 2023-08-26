@@ -12,17 +12,21 @@ import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat/chat.controller';
 import { GameModule } from './game/game.module';
 import { GlobalGateway } from './global/global.gateway';
+import { UsersService } from './users/users.service';
+import { GlobalModule } from './global/global.module';
+import { GlobalService } from './global/global.service';
 
 @Module({
   imports: [
     AuthModule,
     PrismaModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    UsersModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
     }),
     GameModule,
+    GlobalModule,
+    UsersModule,
   ],
   controllers: [TwoFactorAuthenticationController, ChatController],
   providers: [
@@ -31,6 +35,8 @@ import { GlobalGateway } from './global/global.gateway';
     ChatGateway,
     GlobalGateway,
     ChatService,
+    GlobalService,
+    UsersService,
   ],
 })
 export class AppModule {}

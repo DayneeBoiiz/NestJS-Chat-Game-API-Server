@@ -68,7 +68,7 @@ model Room {
   isGroup   Boolean?
   password  String?
 
-  uid String? @unique
+  uid String @unique
   admins User[] @relation("AdminRooms")
 
   owner   User? @relation(name: "roomOwner", fields: [ownerID], references: [id])

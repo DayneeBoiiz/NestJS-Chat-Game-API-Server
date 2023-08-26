@@ -1,3 +1,4 @@
+import { Inject, forwardRef } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -6,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UsersService } from 'src/users/users.service';
 
 @WebSocketGateway({
   namespace: 'global',
@@ -15,15 +17,26 @@ import { Server, Socket } from 'socket.io';
   },
 })
 export class GlobalGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  constructor(
+    @Inject(forwardRef(() => UsersService))
+    private userService: UsersService,
+  ) {}
+
   @WebSocketServer()
   server: Server;
 
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
+    const user = client.handshake.query;
+    const userId = user.id;
+    this.userService.addSocket(userId as string, client);
   }
 
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+    const user = client.handshake.query;
+    const userId = user.id;
+    this.userService.removeSocket(userId as string, client);
   }
 
   @SubscribeMessage('Hello')

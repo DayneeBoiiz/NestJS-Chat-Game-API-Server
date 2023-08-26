@@ -16,6 +16,7 @@ import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { GlobalGateway } from 'src/global/global.gateway';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +30,8 @@ export class UsersService {
     this.scheduleDataCleanup();
   }
 
+  private userSocketsMap: Map<number, Socket[]> = new Map<number, Socket[]>();
+
   private scheduleDataCleanup() {
     const job = new CronJob('0 0 * * *', async () => {
       try {
@@ -38,7 +41,6 @@ export class UsersService {
       }
     });
 
-    // Start the cron job
     job.start();
   }
 
@@ -51,10 +53,10 @@ export class UsersService {
     await this.prisma.blockedTokens.create({ data: { token } });
   }
 
-  async onlineState(user: User) {
+  async onlineState(userID: number) {
     await this.prisma.user.update({
       where: {
-        id: user.id,
+        id: userID,
       },
       data: {
         state: 'online',
@@ -62,10 +64,10 @@ export class UsersService {
     });
   }
 
-  async offlineState(user: User) {
+  async offlineState(userID: number) {
     await this.prisma.user.update({
       where: {
-        id: user.id,
+        id: userID,
       },
       data: {
         state: 'offline',
@@ -605,6 +607,7 @@ export class UsersService {
                   nickname: true,
                   state: true,
                   avatarUrl: true,
+                  provider: true,
                 },
               },
             },
@@ -751,6 +754,7 @@ export class UsersService {
               select: {
                 nickname: true,
                 avatarUrl: true,
+                provider: true,
               },
             },
           },
@@ -829,6 +833,33 @@ export class UsersService {
       );
       // console.log(absolutePath);
       return res.sendFile(absolutePath);
+    }
+  }
+
+  addSocket(userId: string, client: Socket) {
+    const userID = parseInt(userId);
+
+    if (!this.userSocketsMap.has(userID)) {
+      this.userSocketsMap.set(userID, []);
+    }
+    this.userSocketsMap.get(userID).push(client);
+
+    this.onlineState(userID);
+  }
+
+  removeSocket(userId: string, client: Socket) {
+    const userID = parseInt(userId);
+
+    if (this.userSocketsMap.has(userID)) {
+      const sockets = this.userSocketsMap.get(userID);
+      const socketIndex = sockets.findIndex((s) => s === client);
+      if (socketIndex !== -1) {
+        sockets.splice(socketIndex, 1);
+      }
+
+      if (sockets.length === 0) {
+        this.offlineState(userID);
+      }
     }
   }
 }
