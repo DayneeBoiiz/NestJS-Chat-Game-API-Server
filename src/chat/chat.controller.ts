@@ -47,10 +47,10 @@ export class ChatController {
 
   @Post('leave-room')
   async handleLeaveRoom(@GetUser() user: User, @Body() data: any) {
-    const { conversationdId } = data;
+    const { conversationId } = data;
 
     try {
-      return await this.chatService.handleLeaveRoom(conversationdId, user.id);
+      return await this.chatService.handleLeaveRoom(conversationId, user.id);
     } catch (error) {
       console.log(error);
       return { error: error.message };
@@ -60,7 +60,7 @@ export class ChatController {
   @Post('join-room')
   async handleJoinRoom(@GetUser() user: User, @Body() data: any) {
     const {
-      conversationdId,
+      conversationId,
       isProtected,
       isPrivate,
       isGroup,
@@ -70,12 +70,12 @@ export class ChatController {
 
     try {
       if (isGroup) {
-        return await this.chatService.joinPublicRoom(conversationdId, user.id);
+        return await this.chatService.joinPublicRoom(conversationId, user.id);
       } else if (isPrivate) {
         return await this.chatService.joinPrivateRoom(user.id, roomKey);
       } else if (isProtected) {
         return await this.chatService.joinProtectedRoom(
-          conversationdId,
+          conversationId,
           user.id,
           password,
         );
@@ -105,6 +105,18 @@ export class ChatController {
       } else if (roomType === 'isPrivate') {
         // return await this.chatService.getPrivateRooms();
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get(':roomId/other-user')
+  async handleGetOtherUser(
+    @Param('roomId') conversationID: string,
+    @GetUser() user: User,
+  ) {
+    try {
+      return await this.chatService.getOtherUser(conversationID, user);
     } catch (error) {
       console.log(error);
     }
@@ -142,13 +154,17 @@ export class ChatController {
     }
   }
 
-  @Get('channel/:roomuid/details')
-  async haneleGetChannelDetails(
-    @GetUser() user: User,
-    @Param('roomuid') roomUid: string,
-  ) {
+  @Get('channel/details')
+  async haneleGetChannelDetails(@GetUser() user: User, @Body() data: any) {
+    const { conversationId } = data;
+
+    console.log(conversationId);
+
     try {
-      return await this.chatService.handleGetChannelDetails(user.id, roomUid);
+      return await this.chatService.handleGetChannelDetails(
+        user.id,
+        conversationId,
+      );
     } catch (error) {
       console.log(error);
     }

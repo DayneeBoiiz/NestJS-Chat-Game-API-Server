@@ -24,10 +24,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: Socket, ...args: any[]) {
     // this.userID = await this.chatService.extractUserId(client);
-    console.log(`Client connected: ${client.id}`);
+    console.log(`Client connected To The Chat: ${client.id}`);
   }
   async handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(`Client disconnected from The Chat: ${client.id}`);
   }
 
   @SubscribeMessage('joinRoom')
