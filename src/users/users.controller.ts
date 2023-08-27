@@ -63,6 +63,16 @@ export class UsersController {
     return this.userService.getAvatar(user, res);
   }
 
+  @Get(':userId/avatar')
+  async getPublicAvatar(@Param('userId') userId: string, @Res() res: Response) {
+    try {
+      return await this.userService.getPublicAvatar(userId, res);
+    } catch (error) {
+      console.log(error);
+      res.send({ error: error.message });
+    }
+  }
+
   @Patch('me/settings/change-username')
   async changeUsername(
     @GetUser() user: User,

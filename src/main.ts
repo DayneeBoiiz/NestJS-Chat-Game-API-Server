@@ -14,7 +14,7 @@ async function bootstrap() {
       saveUninitialized: false,
     }),
   );
-  app.useWebSocketAdapter(new IoAdapter(app));
+  // app.useWebSocketAdapter(new IoAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.enableCors({
     origin: ['http://10.30.153.186:3000', 'http://localhost:3000'],

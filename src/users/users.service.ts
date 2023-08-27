@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
   UseGuards,
   forwardRef,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { ConfigService } from '@nestjs/config';
 import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { GlobalGateway } from 'src/global/global.gateway';
 import { Socket } from 'socket.io';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -833,6 +835,46 @@ export class UsersService {
       );
       // console.log(absolutePath);
       return res.sendFile(absolutePath);
+    }
+  }
+
+  async getPublicAvatar(userId: string, res: Response) {
+    try {
+      const userID = parseInt(userId);
+      const find_user = await this.prisma.user.findUnique({
+        where: {
+          id: userID,
+        },
+      });
+
+      // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
+
+      if (!find_user) {
+        throw new NotFoundException('user not found');
+      }
+
+      //if the user has the default avatar
+      if (find_user.avatarUrl === 'default_avatar.png') {
+        const absolutePath = path.join(
+          __dirname,
+          this.config.get('DEFAULT_AVATAR_PATH'),
+          find_user.avatarUrl,
+        );
+        // console.log(absolutePath);
+        return res.sendFile(absolutePath);
+      }
+      //if the user has a custom avatar
+      else {
+        const absolutePath = path.join(
+          __dirname,
+          this.config.get('AVATAR_PATH'),
+          find_user.avatarUrl,
+        );
+        // console.log(absolutePath);
+        return res.sendFile(absolutePath);
+      }
+    } catch (error) {
+      throw new Error(error.message);
     }
   }
 
