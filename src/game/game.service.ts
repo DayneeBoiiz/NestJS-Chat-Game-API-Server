@@ -101,19 +101,6 @@ export class GameService {
     gameTable.player2 = players[1];
 
     server.to('hello').emit('gameStarted', gameTable);
-
-    // players.forEach((player, index) => {
-    //   // if (index === 1) {
-    //   //   player.socket.emit('flipCanvas', true);
-    //   // }
-    //   console.log('object', gameTable);
-    //   player.socket.emit('gameStarted', {
-    //     username: 'Hello',
-    //     player1: gameTable.player1,
-    //     player2: gameTable.player2,
-    //   });
-    //   this.userIdSet.delete(player.userId); // Remove user ID from userIdSet
-    // });
   }
 
   private removeFromQueue(id: number) {

@@ -4,17 +4,25 @@ interface IPlayer {
   id: number;
   nickname: string;
   socketId: string;
+  // paddle: string;
 }
 
 export class Player implements IPlayer {
   id: number;
   nickname: string;
   socketId: string;
+  // paddle: string;
 
-  constructor(userId: number, nickname: string, socketId: string) {
+  constructor(
+    userId: number,
+    nickname: string,
+    socketId: string,
+    // paddle: string,
+  ) {
     this.id = userId;
     this.nickname = nickname;
     this.socketId = socketId;
+    // this.paddle = paddle;
   }
 }
 

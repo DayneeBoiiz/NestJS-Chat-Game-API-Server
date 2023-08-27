@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -58,7 +60,11 @@ export class ChatController {
   }
 
   @Post('join-room')
-  async handleJoinRoom(@GetUser() user: User, @Body() data: any) {
+  async handleJoinRoom(
+    @GetUser() user: User,
+    @Body() data: any,
+    @Res({ passthrough: true }) res: any,
+  ) {
     const {
       conversationId,
       isProtected,
@@ -81,7 +87,7 @@ export class ChatController {
         );
       }
     } catch (error) {
-      console.log(error);
+      res.status(HttpStatus.UNAUTHORIZED);
       return { error: error.message };
     }
   }
