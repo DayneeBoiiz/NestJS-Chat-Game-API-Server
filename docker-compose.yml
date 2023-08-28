@@ -2,7 +2,7 @@ version: '3'
 
 services:
   postgres:
-    container_name: backendCollab
+    container_name: database
     image: postgres:14
     ports:
       - 5432:5432

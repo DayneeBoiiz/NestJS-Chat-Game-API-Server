@@ -170,6 +170,26 @@ export class ChatController {
     }
   }
 
+  //mute 
+
+  @Post("mute")
+  async handleMute(@GetUser() user: User, @Body() data: any, targetUser: User) {
+      const { conversationId, duration } = data;
+      await this.chatService.handleMute(user.id, conversationId, targetUser.id, duration);
+  }
+  //ban
+  @Post("ban")
+  async handleBan(@GetUser() user: User, @Body() data: any, targetUser: User) {
+      const { conversationId } = data;
+      await this.chatService.handleBan(user.id, conversationId, targetUser.id);
+  }
+  //kick
+  @Post("kick")
+  async handleKick(@GetUser() user: User, @Body() data: any, targetUser: User) {
+      const { conversationId } = data;
+      await this.chatService.handleKick(user.id, conversationId, targetUser.id);
+  }
+
   // @Post('setadmin')
   // async handleSetAdmin(
   //   @Req() req: Request,

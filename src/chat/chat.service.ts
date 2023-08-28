@@ -15,6 +15,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatGateway } from './chat.gateway';
 import { GlobalGateway } from 'src/global/global.gateway';
 import { User } from '@prisma/client';
+import { CronJob } from 'cron';
 
 @Injectable()
 export class ChatService {
@@ -26,6 +27,22 @@ export class ChatService {
     @Inject(forwardRef(() => GlobalGateway))
     private readonly globalGatway: GlobalGateway,
   ) {}
+
+  private muteDuration() {
+    const job = new CronJob('* * * * *', async () => {
+      try {
+        await this.unMuteUser();
+      } catch (error) {
+        console.error('Error delsdfkjds', error);
+      }
+    });
+
+    job.start();
+  }
+
+  async unMuteUser() {
+
+  }
 
   async handleSetAdmin(roomId: number, userId: number, requestingUser: number) {
     const isRequestingUserAdmin = await this.prisma.room.findFirst({
@@ -611,6 +628,17 @@ export class ChatService {
     message: string,
   ) {
     try {
+      //ismute
+      const checkUser = await this.prisma.user.findUnique({
+        where: {
+          id: userID,
+        },
+      })
+      if (checkUser.isMute) {
+        throw new Error("the user is mute can't send message")
+      }
+
+
       const newMessage = await this.prisma.message.create({
         data: {
           content: message,
@@ -841,6 +869,17 @@ export class ChatService {
 
   async joinPublicRoom(conversationdID: string, userID: number) {
     try {
+      //check if the user is blacklisted
+      const checkUser = await this.prisma.user.findUnique({
+        where: {
+          id: userID,
+        },
+      })
+
+      if (checkUser.isBlackListed) {
+        throw new Error("this user is blacklisted");
+      }
+
       const room = await this.prisma.room.findFirst({
         where: {
           uid: conversationdID,
@@ -882,6 +921,17 @@ export class ChatService {
 
   async joinPrivateRoom(userID: number, roomKey: string) {
     try {
+      //check if the user is blacklisted
+      const checkUser = await this.prisma.user.findUnique({
+        where: {
+          id: userID,
+        },
+      })
+
+      if (checkUser.isBlackListed) {
+        throw new Error("this user is blacklisted");
+      }
+
       const room = await this.prisma.room.findUnique({
         where: {
           isPrivateKey: roomKey,
@@ -931,6 +981,17 @@ export class ChatService {
     password: string,
   ) {
     try {
+      //check if the user is blacklisted
+      const checkUser = await this.prisma.user.findUnique({
+        where: {
+          id: userID,
+        },
+      })
+
+      if (checkUser.isBlackListed) {
+        throw new Error("this user is blacklisted");
+      }
+
       const room = await this.prisma.room.findFirst({
         where: {
           uid: conversationdID,
@@ -1034,4 +1095,177 @@ export class ChatService {
       throw new Error(error);
     }
   }
+  //mute
+  async handleMute(userId: number, conversationId: string, targetId: number, duration: number) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationId,
+        },
+        include: {
+          admins: true,
+          owner: true,
+          users: true,
+        }
+      });
+
+      if (!room) {
+        throw new Error ('there is no such room')
+      }
+
+      const isOwner = room.owner.id === userId ;
+      const isAdmin = room.admins.some((admin) => admin.id === userId);
+      const isUser = room.users.some((user) => user.id === targetId);
+
+      if (!isOwner || !isAdmin) {
+        throw new Error("only Admins and Owner can mute")
+      }
+
+      if (!isUser) {
+        throw new Error("there is no such a user");
+      }
+
+      if (isAdmin) {
+          const target = room.owner.id === targetId
+          if (target) {
+            throw new Error("Admins can't mute owners")
+          }
+      }
+
+    
+      await this.prisma.room.update({
+        where: {
+          uid: conversationId,
+        },
+        data: {
+          users: {
+            update: {
+              where: {
+                id: targetId,
+              },
+              data: {
+                isMute: true,
+                duration: duration,
+                muteAt: new Date(),
+              },
+            },
+          },
+        },
+      })
+
+    }
+    
+    catch (error) {
+      console.log(error)
+    }
+  }
+
+  async handleBan(userId: number, conversationId: string, targetId: number) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationId,
+        },
+        include: {
+          admins: true,
+          owner: true,
+          users: true,
+        }
+      });
+
+      if (!room) {
+        throw new Error ('there is no such room')
+      }
+
+      const isOwner = room.owner.id === userId ;
+      const isAdmin = room.admins.some((admin) => admin.id === userId);
+      const isUser = room.users.some((user) => user.id === targetId);
+
+      if (!isOwner || !isAdmin) {
+        throw new Error("only Admins and Owner can ban a user")
+      }
+
+      if (!isUser) {
+        throw new Error("there is no such a user");
+      }
+
+      if (isAdmin) {
+          const target = room.owner.id === targetId
+          if (target) {
+            throw new Error("Admins can't ban owners")
+          }
+      }
+
+      await this.prisma.room.update({
+        where: {
+          uid: conversationId,
+        },
+        data: {
+          users: {
+            update: {
+              where: {
+                id: targetId,
+              },
+              data: {
+                isBlackListed: true,
+              },
+            },
+          },
+        },
+      })
+
+      this.handleLeaveRoom(conversationId, targetId);
+    }
+    
+    catch (error) {
+      console.log(error)
+    }
+  }
+
+  async handleKick(userId: number, conversationId: string, targetId: number) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationId,
+        },
+        include: {
+          admins: true,
+          owner: true,
+          users: true,
+        }
+      });
+
+      if (!room) {
+        throw new Error ('there is no such room')
+      }
+
+      const isOwner = room.owner.id === userId ;
+      const isAdmin = room.admins.some((admin) => admin.id === userId);
+      const isUser = room.users.some((user) => user.id === targetId);
+
+      if (!isOwner || !isAdmin) {
+        throw new Error("only Admins and Owner can kick a user")
+      }
+
+      if (!isUser) {
+        throw new Error("there is no such a user");
+      }
+
+      if (isAdmin) {
+          const target = room.owner.id === targetId
+          if (target) {
+            throw new Error("Admins can't kick owners")
+          }
+      }
+
+      this.handleLeaveRoom(conversationId, targetId);
+    }
+    
+    catch (error) {
+      console.log(error)
+    }
+  }
 }
+
+
+
