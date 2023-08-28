@@ -17,7 +17,12 @@ async function bootstrap() {
   // app.useWebSocketAdapter(new IoAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.enableCors({
-    origin: ['http://10.30.153.186:3000', 'http://localhost:3000'],
+    origin: [
+      'http://10.30.153.186:3000',
+      'http://localhost:3000',
+      'http://10.30.144.163:3000',
+      'http://10.30.160.56:3000',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204,

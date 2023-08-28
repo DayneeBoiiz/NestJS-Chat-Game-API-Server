@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserInfo } from './utils/types';
 import { Server, Socket } from 'socket.io';
-import { GameTable, Player } from './utils/game-table.model';
+import { Ball, GameTable, Player } from './utils/game-table.model';
 
 enum PlayOption {
   PlayWithBot = 'playWithBot',
@@ -99,6 +99,7 @@ export class GameService {
     const gameTable = new GameTable();
     gameTable.player1 = players[0];
     gameTable.player2 = players[1];
+    // gameTable.ball = new Ball(350, 200);
 
     server.to('hello').emit('gameStarted', gameTable);
   }

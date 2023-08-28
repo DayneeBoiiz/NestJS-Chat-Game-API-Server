@@ -60,7 +60,15 @@ export class UsersController {
   @Get('my-avatar')
   @UseGuards(JwtGuard)
   getAvatar(@GetUser() user: User, @Res() res: Response) {
-    return this.userService.getAvatar(user, res);
+    try {
+      if (user.provider === 'intra') {
+        return res.json(user.avatarUrl);
+      } else {
+        return this.userService.getAvatar(user, res);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Get(':userId/avatar')

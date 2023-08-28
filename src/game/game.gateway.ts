@@ -15,6 +15,11 @@ enum PlayOption {
   InviteFriend = 'inviteFriend',
 }
 
+enum Direction {
+  Up = -1,
+  Down = 1,
+}
+
 @WebSocketGateway({ namespace: 'game' })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private gameService: GameService) {}
@@ -69,6 +74,39 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         console.log('Invalid play option');
         break;
     }
+  }
+
+  @SubscribeMessage('paddlePositionUpdate')
+  handlePaddleUpdate(client: Socket, data: any) {
+    const { playerId, paddlePosition } = data;
+    const roomName = 'hello'; // Assuming the room name is 'hello'
+    this.server.to(roomName).emit('paddlePositionUpdate', {
+      playerId: playerId,
+      paddlePosition: paddlePosition,
+      paddle: playerId === 1 ? 'left' : 'right', // Assuming player 1 is on the left and player 2 is on the right
+    });
+  }
+
+  @SubscribeMessage('paddlePositionStop')
+  handlePaddleStop(client: Socket, data: any) {
+    const { playerId } = data;
+    const roomName = 'hello'; // Assuming the room name is 'hello'
+
+    this.server.to(roomName).emit('paddlePositionStop', {
+      playerId: playerId,
+      // paddle: playerId === 1 ? 'left' : 'right', // Assuming player 1 is on the left and player 2 is on the right
+    });
+  }
+
+  @SubscribeMessage('ballPositionUpdate')
+  handleBallUpdate(
+    client: Socket,
+    data: { x: number; y: number; playerId: number },
+  ) {
+    // console.log(data);
+
+    // this.server.to('hello').emit('ballPositionUpdate', data);
+    client.to('hello').emit('opponentBallPositionUpdated', data);
   }
 
   handleDisconnect(client: Socket) {
