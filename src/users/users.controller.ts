@@ -72,7 +72,7 @@ export class UsersController {
   }
 
   @Get(':userId/avatar')
-  async getPublicAvatar(@Param('userId') userId: string, @Res() res: Response) {
+  async getPublicAvatar(@Param('userId') userId: number, @Res() res: Response) {
     try {
       return await this.userService.getPublicAvatar(userId, res);
     } catch (error) {

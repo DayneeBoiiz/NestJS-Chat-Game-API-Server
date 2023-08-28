@@ -1019,7 +1019,21 @@ export class ChatService {
           users: true,
           admins: true,
           owner: true,
-          messages: true,
+          messages: {
+            select: {
+              content: true,
+              roomID: true,
+              seen: true,
+              createdAt: true,
+              sender: {
+                select: {
+                  avatarUrl: true,
+                  nickname: true,
+                  provider: true,
+                },
+              },
+            },
+          },
         },
       });
 

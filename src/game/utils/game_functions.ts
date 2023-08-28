@@ -1,23 +1,23 @@
 import { Ball } from './game-table.model';
 
-const PaddleWidth = 10;
-const PaddleHeight = 100;
+export const PaddleWidth = 10;
+export const PaddleHeight = 100;
 
-const canvasHeight = 400;
-const canvasWidth = 700;
+export const canvasHeight = 400;
+export const canvasWidth = 700;
 
-// const moveBall = (ball: Ball) => {
-//   ball.x += ball.speedX;
-//   ball.y += ball.speedY;
+export const moveBall = (ball: Ball) => {
+  ball.x += ball.speedX;
+  ball.y += ball.speedY;
 
-//   // Check if the ball hits the top or bottom boundaries
-//   if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvasHeight) {
-//     ball.speedY *= -1; // Reverse the vertical direction
-//   }
+  // Check if the ball hits the top or bottom boundaries
+  if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvasHeight) {
+    ball.speedY *= -1; // Reverse the vertical direction
+  }
 
-//   // Check collision with paddles and canvas boundaries
-//   check_collision(ball);
-// };
+  // Check collision with paddles and canvas boundaries
+  check_collision(ball);
+};
 
 const check_collision = (ball: Ball) => {
   // Check collision with left paddle

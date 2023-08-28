@@ -108,6 +108,7 @@ export class UsersService {
       const firstFriendship = await this.prisma.friend.findFirst({
         where: {
           sentByID: user.id,
+          receivedByID: friend.id,
         },
       });
 
@@ -118,6 +119,7 @@ export class UsersService {
       const secondFriendship = await this.prisma.friend.findFirst({
         where: {
           sentByID: friend.id,
+          receivedByID: user.id,
         },
       });
 
@@ -838,12 +840,11 @@ export class UsersService {
     }
   }
 
-  async getPublicAvatar(userId: string, res: Response) {
+  async getPublicAvatar(userId: number, res: Response) {
     try {
-      const userID = parseInt(userId);
       const find_user = await this.prisma.user.findUnique({
         where: {
-          id: userID,
+          id: userId,
         },
       });
 

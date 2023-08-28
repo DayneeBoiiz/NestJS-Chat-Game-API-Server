@@ -160,17 +160,13 @@ export class ChatController {
     }
   }
 
-  @Get('channel/details')
-  async haneleGetChannelDetails(@GetUser() user: User, @Body() data: any) {
-    const { conversationId } = data;
-
-    console.log(conversationId);
-
+  @Get('channel/:roomId/details')
+  async haneleGetChannelDetails(
+    @GetUser() user: User,
+    @Param('roomId') roomId: string,
+  ) {
     try {
-      return await this.chatService.handleGetChannelDetails(
-        user.id,
-        conversationId,
-      );
+      return await this.chatService.handleGetChannelDetails(user.id, roomId);
     } catch (error) {
       console.log(error);
     }

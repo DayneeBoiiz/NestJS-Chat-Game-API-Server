@@ -28,7 +28,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   afterInit(server: Server) {
-    // console.log('WebSocket server initialized');
+    this.gameService.initServer(server);
   }
 
   handleConnection(client: Socket) {
@@ -79,7 +79,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('paddlePositionUpdate')
   handlePaddleUpdate(client: Socket, data: any) {
     const { playerId, paddlePosition } = data;
+
+    // console.log(data);
     const roomName = 'hello'; // Assuming the room name is 'hello'
+    this.gameService.updatePaddlePosition(playerId, paddlePosition);
     this.server.to(roomName).emit('paddlePositionUpdate', {
       playerId: playerId,
       paddlePosition: paddlePosition,

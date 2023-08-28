@@ -2,7 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserInfo } from './utils/types';
 import { Server, Socket } from 'socket.io';
-import { Ball, GameTable, Player } from './utils/game-table.model';
+import {
+  Ball,
+  GameManager,
+  GameTable,
+  Paddle,
+  Player,
+} from './utils/game-table.model';
+import { moveBall } from './utils/game_functions';
 
 enum PlayOption {
   PlayWithBot = 'playWithBot',
@@ -12,10 +19,18 @@ enum PlayOption {
 
 @Injectable()
 export class GameService {
-  constructor(private prisma: PrismaService) {}
-
   private readonly usersQueue: Player[] = [];
   private readonly userIdSet: Set<number> = new Set<number>();
+  private gameManager: GameManager;
+  private server: Server;
+
+  constructor(private prisma: PrismaService) {
+    this.gameManager = new GameManager(this.server);
+  }
+
+  initServer(server: Server) {
+    this.server = server;
+  }
 
   // addUserToQueue(id: number, username: string, socket: Socket) {
   //   if (this.userIdSet.has(id)) {
@@ -60,7 +75,7 @@ export class GameService {
       return;
     }
 
-    const userInfo: Player = { id, nickname, socketId };
+    const userInfo: any = { id, nickname, socketId };
     this.usersQueue.push(userInfo);
     this.userIdSet.add(id);
 
@@ -94,14 +109,37 @@ export class GameService {
   }
 
   private startGame(server: Server) {
-    // Two users are in the queue, emit 'gameStarted' event
-    const players = this.usersQueue.splice(0, 2);
-    const gameTable = new GameTable();
-    gameTable.player1 = players[0];
-    gameTable.player2 = players[1];
-    // gameTable.ball = new Ball(350, 200);
+    this.gameManager.startGame(this.usersQueue, server); // Use GameManager to start the game
 
-    server.to('hello').emit('gameStarted', gameTable);
+    // Two users are in the queue, emit 'gameStarted' event
+    // const players = this.usersQueue.splice(0, 2);
+    // const gameTable = new GameTable();
+    // gameTable.player1 = players[0];
+    // gameTable.player2 = players[1];
+    // gameTable.player1.paddle = new Paddle(10, 150);
+    // gameTable.player2.paddle = new Paddle(680, 150);
+
+    // setInterval(() => {
+    //   moveBall(gameTable.ball);
+    //   server.to('hello').emit('BallPositionUpdated', {
+    //     ball: {
+    //       x: gameTable.ball.x,
+    //       y: gameTable.ball.y,
+    //     },
+    //     firstPaddle: {
+    //       playerId: gameTable.player1.id,
+    //       x: gameTable.player1.paddle.x,
+    //       y: gameTable.player1.paddle.y,
+    //     },
+    //     secondPaddle: {
+    //       playerId: gameTable.player2.id,
+    //       x: gameTable.player2.paddle.x,
+    //       y: gameTable.player2.paddle.y,
+    //     },
+    //   });
+    // }, 16);
+
+    // server.to('hello').emit('gameStarted', gameTable);
   }
 
   private removeFromQueue(id: number) {
@@ -111,5 +149,9 @@ export class GameService {
       this.userIdSet.delete(id);
       console.log('User removed from queue:', id);
     }
+  }
+
+  updatePaddlePosition(playerId: number, paddlePosition: number) {
+    this.gameManager.updatePaddlePosition(playerId, paddlePosition);
   }
 }
