@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import {
+  PADDLE_MOVE_SPEED,
   PaddleHeight,
   PaddleWidth,
   canvasHeight,
@@ -112,6 +113,8 @@ export class GameManager {
         secondPaddle: {
           y: this.gameTable.player2.paddle.y,
         },
+        PaddleWidth: this.gameTable.player1.paddle.width,
+        PaddleHeight: this.gameTable.player1.paddle.height,
       });
     }, 16);
 
@@ -125,16 +128,14 @@ export class GameManager {
         : this.gameTable.player2;
 
     if (player.paddle) {
-      if (paddlePosition === 1) {
-        player.paddle.y += 2;
-      } else if (paddlePosition === -1) {
-        player.paddle.y -= 2;
-      }
+      const targetY = player.paddle.y + paddlePosition * PADDLE_MOVE_SPEED;
 
-      if (player.paddle.y < 0) {
+      if (targetY < 0) {
         player.paddle.y = 0;
-      } else if (player.paddle.y + PaddleHeight > canvasHeight) {
-        player.paddle.y = canvasHeight - player.paddle.height;
+      } else if (targetY + PaddleHeight > canvasHeight) {
+        player.paddle.y = canvasHeight - PaddleHeight;
+      } else {
+        player.paddle.y = targetY;
       }
     }
   }
