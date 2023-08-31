@@ -17,15 +17,23 @@ interface IPlayer {
 export class Ball {
   x!: number;
   y!: number;
+  speed: number;
   radius: number;
   speedX: number;
   speedY: number;
+
+  increaseSpeed() {
+    this.speed += 1;
+    this.speedX = Math.sign(this.speedX) * this.speed;
+    this.speedY = Math.sign(this.speedY) * this.speed;
+  }
 
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
     this.radius = Math.PI * 2;
-    this.speedX = 3; // Speed in the horizontal direction
+    this.speed = 3;
+    this.speedX = 3;
     this.speedY = 2;
   }
 }
@@ -35,14 +43,14 @@ export class Paddle {
   y!: number;
   width!: number;
   height!: number;
-  dy!: number;
+  // dy!: number;
 
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
-    this.width = PaddleWidth;
-    this.height = PaddleHeight;
-    this.dy = 0;
+    this.width = 10;
+    this.height = 100;
+    // this.dy = 0;
   }
 }
 
@@ -51,12 +59,14 @@ export class Player implements IPlayer {
   nickname: string;
   socketId: string;
   paddle: Paddle | null;
+  score: number;
 
   constructor(userId: number, nickname: string, socketId: string) {
     this.id = userId;
     this.nickname = nickname;
     this.socketId = socketId;
     this.paddle = null;
+    this.score = 0;
   }
 }
 
@@ -73,33 +83,33 @@ export class GameTable {
 export class GameManager {
   private gameTable: GameTable;
   private server: Server;
+  private playerId: number;
 
   constructor(server: Server) {
     this.gameTable = new GameTable();
     this.server = server;
   }
 
-  startGame(players: Player[], server: Server) {
+  startGame(players: Player[], server: Server, playerId: number) {
     this.gameTable.player1 = players[0];
     this.gameTable.player2 = players[1];
     this.gameTable.player1.paddle = new Paddle(10, 150);
     this.gameTable.player2.paddle = new Paddle(680, 150);
 
     setInterval(() => {
-      moveBall(this.gameTable.ball);
+      moveBall(
+        this.gameTable.ball,
+        this.gameTable.player1.paddle,
+        this.gameTable.player2.paddle,
+      );
       server.to('hello').emit('BallPositionUpdated', {
         ball: {
           x: this.gameTable.ball.x,
           y: this.gameTable.ball.y,
         },
-        firstPaddle: {
-          playerId: this.gameTable.player1.id,
-          x: this.gameTable.player1.paddle.x,
-          y: this.gameTable.player1.paddle.y,
-        },
+        playerId: playerId,
+        y: this.gameTable.player1.paddle.y,
         secondPaddle: {
-          playerId: this.gameTable.player2.id,
-          x: this.gameTable.player2.paddle.x,
           y: this.gameTable.player2.paddle.y,
         },
       });
@@ -115,27 +125,19 @@ export class GameManager {
         : this.gameTable.player2;
 
     if (player.paddle) {
-      // Assuming that paddlePosition is 1 to move down and -1 to move up
       if (paddlePosition === 1) {
-        // Move the paddle down
-        player.paddle.y += 5;
+        player.paddle.y += 2;
       } else if (paddlePosition === -1) {
-        // Move the paddle up
-        player.paddle.y -= 5;
+        player.paddle.y -= 2;
       }
 
-      // Ensure the paddle stays within the canvas boundaries
       if (player.paddle.y < 0) {
         player.paddle.y = 0;
       } else if (player.paddle.y + PaddleHeight > canvasHeight) {
-        player.paddle.y = 5 - PaddleHeight;
+        player.paddle.y = canvasHeight - player.paddle.height;
       }
     }
   }
-
-  // private moveBall() {
-  //   // Logic to move the ball
-  // }
 
   private updateClients() {
     // Emit updated game state to clients

@@ -95,7 +95,7 @@ export class GameService {
       if (this.usersQueue.length >= 2) {
         server.to('hello').emit('inQueue');
         setTimeout(() => {
-          this.startGame(server);
+          this.startGame(server, id);
         }, 2000);
       } else {
         server.to('hello').emit('inQueue', {
@@ -108,8 +108,8 @@ export class GameService {
     }
   }
 
-  private startGame(server: Server) {
-    this.gameManager.startGame(this.usersQueue, server); // Use GameManager to start the game
+  private startGame(server: Server, playerId: number) {
+    this.gameManager.startGame(this.usersQueue, server, playerId); // Use GameManager to start the game
 
     // Two users are in the queue, emit 'gameStarted' event
     // const players = this.usersQueue.splice(0, 2);

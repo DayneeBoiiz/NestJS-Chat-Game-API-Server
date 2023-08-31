@@ -21,7 +21,7 @@ async function bootstrap() {
       'http://10.30.153.186:3000',
       'http://localhost:3000',
       'http://10.30.144.163:3000',
-      'http://10.30.160.56:3000',
+      'http://10.30.137.174:3000',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,

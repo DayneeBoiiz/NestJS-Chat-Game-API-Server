@@ -358,6 +358,7 @@ export class UsersService {
               email: true,
               state: true,
               friendStatus: true,
+              provider: true,
             },
           },
         },
@@ -377,6 +378,7 @@ export class UsersService {
         email: friend.sentBy.email,
         state: friend.sentBy.state,
         friendStatus: friend.sentBy.friendStatus,
+        provider: friend.sentBy.provider,
       };
 
       this.globalGatway.server.emit('friend:new', payload);
@@ -840,11 +842,13 @@ export class UsersService {
     }
   }
 
-  async getPublicAvatar(userId: number, res: Response) {
+  async getPublicAvatar(userId: string, res: Response) {
     try {
+      const userID = parseInt(userId);
+
       const find_user = await this.prisma.user.findUnique({
         where: {
-          id: userId,
+          id: userID,
         },
       });
 

@@ -83,17 +83,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // console.log(data);
     const roomName = 'hello'; // Assuming the room name is 'hello'
     this.gameService.updatePaddlePosition(playerId, paddlePosition);
-    this.server.to(roomName).emit('paddlePositionUpdate', {
-      playerId: playerId,
-      paddlePosition: paddlePosition,
-      paddle: playerId === 1 ? 'left' : 'right', // Assuming player 1 is on the left and player 2 is on the right
-    });
+    // this.server.to(roomName).emit('paddlePositionUpdate', {
+    //   playerId: playerId,
+    //   paddlePosition: paddlePosition,
+    //   paddle: playerId === 1 ? 'left' : 'right', // Assuming player 1 is on the left and player 2 is on the right
+    // });
   }
 
   @SubscribeMessage('paddlePositionStop')
   handlePaddleStop(client: Socket, data: any) {
     const { playerId } = data;
-    const roomName = 'hello'; // Assuming the room name is 'hello'
+
+    const roomName = 'hello'; // Assuming room name is 'hello'
 
     this.server.to(roomName).emit('paddlePositionStop', {
       playerId: playerId,
@@ -106,9 +107,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client: Socket,
     data: { x: number; y: number; playerId: number },
   ) {
-    // console.log(data);
-
-    // this.server.to('hello').emit('ballPositionUpdate', data);
     client.to('hello').emit('opponentBallPositionUpdated', data);
   }
 
