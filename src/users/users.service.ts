@@ -909,4 +909,19 @@ export class UsersService {
       }
     }
   }
+
+  sendInvite(friendID: number, sender: string) {
+    if (this.userSocketsMap.has(friendID)) {
+      const friendSockets = this.userSocketsMap.get(friendID);
+
+      if (friendSockets && friendSockets.length > 0) {
+        friendSockets[0].emit('IncomingInvite', {
+          sender: sender,
+        });
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

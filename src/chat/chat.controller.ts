@@ -15,6 +15,7 @@ import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guard';
 import { MessageInputDto } from './dto/message.dto';
+import { RemoveUserHashGuard } from 'src/auth/guard/RemoveUserHashGuard';
 
 @UseGuards(JwtGuard)
 @Controller('chat')

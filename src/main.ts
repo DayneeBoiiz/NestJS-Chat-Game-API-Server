@@ -14,14 +14,14 @@ async function bootstrap() {
       saveUninitialized: false,
     }),
   );
-  // app.useWebSocketAdapter(new IoAdapter(app));
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.enableCors({
     origin: [
       'http://10.30.153.186:3000',
       'http://localhost:3000',
       'http://10.30.144.163:3000',
-      'http://10.30.137.174:3000',
+      'http://10.30.137.50:3000',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,

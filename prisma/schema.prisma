@@ -54,6 +54,9 @@ model User {
   matchesAsPlayer1 Match[] @relation("Player1Matches")
   matchesAsPlayer2 Match[] @relation("Player2Matches")
   matchesAsWinner Match[] @relation("WinnerMatches")
+
+  invitePlayer1 GameInvite? @relation("Player1Invite")
+  invitePlayer2 GameInvite? @relation("Player2Invite")
 }
 
 model Room {
@@ -154,5 +157,18 @@ model Match {
   winner    User?   @relation("WinnerMatches", fields: [winnerId], references: [id])
   winnerId  Int?
 
-  score     String
+  player1Score     Int?
+  player2Score     Int?
+}
+
+model GameInvite {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player1   User    @relation("Player1Invite", fields: [player1Id], references: [id])
+  player1Id Int @unique
+
+  player2   User    @relation("Player2Invite", fields: [player2Id], references: [id])
+  player2Id Int @unique
 }

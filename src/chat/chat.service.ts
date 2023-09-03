@@ -1009,6 +1009,13 @@ export class ChatService {
     }
   }
 
+  transformUsers(users: any[], currentUserId: number) {
+    return users.map((user) => {
+      const { hash, ...userWithoutHash } = user;
+      return userWithoutHash;
+    });
+  }
+
   async handleGetChannelDetails(userID: number, conversationdID: string) {
     try {
       const room = await this.prisma.room.findUnique({
@@ -1036,6 +1043,12 @@ export class ChatService {
           },
         },
       });
+
+      const currentUserId = userID;
+
+      if (room && room.users) {
+        room.users = this.transformUsers(room.users, currentUserId);
+      }
 
       const isMember = await this.isUserInRoom(userID, room.id);
 

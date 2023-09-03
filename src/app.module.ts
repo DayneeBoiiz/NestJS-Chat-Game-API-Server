@@ -15,6 +15,7 @@ import { GlobalGateway } from './global/global.gateway';
 import { UsersService } from './users/users.service';
 import { GlobalModule } from './global/global.module';
 import { GlobalService } from './global/global.service';
+import { PusherModule } from './pusher/pusher.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { GlobalService } from './global/global.service';
     GameModule,
     GlobalModule,
     UsersModule,
+    PusherModule,
   ],
   controllers: [TwoFactorAuthenticationController, ChatController],
   providers: [

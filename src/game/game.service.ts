@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserInfo } from './utils/types';
 import { Server, Socket } from 'socket.io';
@@ -10,6 +10,9 @@ import {
   Player,
 } from './utils/game-table.model';
 import { moveBall } from './utils/game_functions';
+import { Result } from 'src/auth/utils/types';
+import { GlobalGateway } from 'src/global/global.gateway';
+import Pusher from 'pusher';
 
 enum PlayOption {
   PlayWithBot = 'playWithBot',
@@ -24,8 +27,13 @@ export class GameService {
   private gameManager: GameManager;
   private server: Server;
 
-  constructor(private prisma: PrismaService) {
-    this.gameManager = new GameManager(this.server);
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => GlobalGateway))
+    private readonly globalGatway: GlobalGateway,
+    @Inject('PUSHER') private readonly pusher: Pusher,
+  ) {
+    this.gameManager = new GameManager(this.server, this);
   }
 
   initServer(server: Server) {
@@ -62,6 +70,42 @@ export class GameService {
   //     console.log(this.usersQueue);
   //   }
   // }
+
+  startGameWithRandom(
+    player2Id: number,
+    player2Username: string,
+    player2Socketid: string,
+    player1Id: number,
+    player1Username: string,
+    player1SocketId: string,
+    roomName: string,
+    server: Server,
+    gameManagers: Set<{
+      gameManager: GameManager;
+      roomName: string;
+      player1SocketId: string;
+      player2SocketId: string;
+    }>,
+  ) {
+    const player1 = new Player(player1Id, player1Username, player1SocketId);
+    const player2 = new Player(player2Id, player2Username, player2Socketid);
+
+    const players = [player1, player2];
+    const gameManager = new GameManager(server, this);
+
+    gameManagers.add({
+      gameManager,
+      roomName,
+      player1SocketId: player1.socketId,
+      player2SocketId: player2.socketId,
+    });
+
+    // console.log(gameManager);
+
+    // server.to(roomName).emit('gameStarted');
+
+    gameManager.startGame(players, server, player1Id, roomName);
+  }
 
   addUserToQueue(
     id: number,
@@ -109,37 +153,7 @@ export class GameService {
   }
 
   private startGame(server: Server, playerId: number) {
-    this.gameManager.startGame(this.usersQueue, server, playerId); // Use GameManager to start the game
-
-    // Two users are in the queue, emit 'gameStarted' event
-    // const players = this.usersQueue.splice(0, 2);
-    // const gameTable = new GameTable();
-    // gameTable.player1 = players[0];
-    // gameTable.player2 = players[1];
-    // gameTable.player1.paddle = new Paddle(10, 150);
-    // gameTable.player2.paddle = new Paddle(680, 150);
-
-    // setInterval(() => {
-    //   moveBall(gameTable.ball);
-    //   server.to('hello').emit('BallPositionUpdated', {
-    //     ball: {
-    //       x: gameTable.ball.x,
-    //       y: gameTable.ball.y,
-    //     },
-    //     firstPaddle: {
-    //       playerId: gameTable.player1.id,
-    //       x: gameTable.player1.paddle.x,
-    //       y: gameTable.player1.paddle.y,
-    //     },
-    //     secondPaddle: {
-    //       playerId: gameTable.player2.id,
-    //       x: gameTable.player2.paddle.x,
-    //       y: gameTable.player2.paddle.y,
-    //     },
-    //   });
-    // }, 16);
-
-    // server.to('hello').emit('gameStarted', gameTable);
+    // this.gameManager.startGame(this.usersQueue, server, playerId); // Use GameManager to start the game
   }
 
   private removeFromQueue(id: number) {
@@ -153,5 +167,88 @@ export class GameService {
 
   updatePaddlePosition(playerId: number, paddlePosition: number) {
     this.gameManager.updatePaddlePosition(playerId, paddlePosition);
+  }
+
+  async handleSaveGame(result: Result) {
+    try {
+      const match = await this.prisma.match.create({
+        data: {
+          winnerId: result.winnerId,
+          player1Id: result.player1Id,
+          player2Id: result.player2Id,
+          player1Score: result.player1Score,
+          player2Score: result.player2Score,
+        },
+      });
+
+      if (!match) {
+        throw new Error('Error while saving the game');
+      }
+
+      return match;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleSendInvite(userID: number, reciever: string) {
+    try {
+      const recipient = await this.prisma.user.findUnique({
+        where: {
+          nickname: reciever,
+        },
+      });
+
+      if (!recipient) {
+        throw new Error('Friend Not Found');
+      }
+
+      const invite = await this.prisma.gameInvite.create({
+        data: {
+          player1Id: userID,
+          player2Id: recipient.id,
+        },
+        include: {
+          player1: {
+            select: {
+              nickname: true,
+            },
+          },
+        },
+      });
+
+      if (!invite) {
+        throw new Error("Can't send Invite");
+      }
+
+      const recipientChannel = recipient.nickname;
+      // this.pusher.post()
+
+      console.log(
+        `Triggering invite:new event on channel: ${recipientChannel}`,
+      );
+
+      this.pusher.trigger(recipientChannel, 'invite:new', {
+        sender: invite.player1.nickname,
+      });
+
+      return invite;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleGetMyInvites(userID: number) {
+    try {
+      const invites = await this.prisma.gameInvite.findMany({
+        where: {
+          player2Id: userID,
+        },
+      });
+
+      return invites;
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

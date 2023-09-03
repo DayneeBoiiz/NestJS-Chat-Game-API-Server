@@ -27,6 +27,7 @@ export class GlobalGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
+    // console.log(client.handshake.query);
     const user = client.handshake.query;
     const userId = user.id;
     this.userService.addSocket(userId as string, client);
@@ -39,6 +40,9 @@ export class GlobalGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.userService.removeSocket(userId as string, client);
   }
 
-  @SubscribeMessage('Hello')
-  async handleHello() {}
+  @SubscribeMessage('send-invite')
+  async handeSendInvite(client: Socket, data: any) {
+    const { recipientId, sender } = data;
+    this.userService.sendInvite(recipientId, sender);
+  }
 }
