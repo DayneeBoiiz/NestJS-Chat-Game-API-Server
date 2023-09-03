@@ -55,22 +55,8 @@ model User {
   matchesAsPlayer2 Match[] @relation("Player2Matches")
   matchesAsWinner Match[] @relation("WinnerMatches")
 
-  isMuted MutedUser? @relation("muted")
+  isMute Boolean @default(false)
   isBlackListed Boolean @default(false)
-}
-
-model MutedUser {
-  id Int @unique @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  UpdatedAt DateTime @updatedAt
-
-  mutedUser User @relation("muted", fields: [userID], references: [id])
-  userID Int @unique
-
-  room Room[] @relation()
-  roomUid String
-  
-  duration Int?
 }
 
 model Room {

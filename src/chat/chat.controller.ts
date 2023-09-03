@@ -173,21 +173,25 @@ export class ChatController {
   //mute 
 
   @Post("mute")
-  async handleMute(@GetUser() user: User, @Body() data: any, targetUser: User) {
-      const { conversationId, duration } = data;
-      await this.chatService.handleMute(user.id, conversationId, targetUser.id, duration);
+  async handleMute(@GetUser() user: User, @Body() data: any) {
+      const { conversationId, targetUser} = data;
+      await this.chatService.handleMute(user.id, conversationId, targetUser);
   }
   //ban
   @Post("ban")
-  async handleBan(@GetUser() user: User, @Body() data: any, targetUser: User) {
-      const { conversationId } = data;
-      await this.chatService.handleBan(user.id, conversationId, targetUser.id);
+  async handleBan(@GetUser() user: User, @Body() data: any) {
+      console.log(user)
+      const { conversationId, targetUser } = data;
+      await this.chatService.handleBan(user.id, conversationId, targetUser);
+      console.log(user)
   }
   //kick
   @Post("kick")
-  async handleKick(@GetUser() user: User, @Body() data: any, targetUser: User) {
-      const { conversationId } = data;
-      await this.chatService.handleKick(user.id, conversationId, targetUser.id);
+  async handleKick(@GetUser() user: User, @Body() data: any) {
+      console.log(user)
+      const { conversationId , targetUser} = data;
+      await this.chatService.handleKick(user.id, conversationId, targetUser);
+      console.log(user)
   }
 
   // @Post('setadmin')
