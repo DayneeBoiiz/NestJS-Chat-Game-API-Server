@@ -35,15 +35,26 @@ export class UsersService {
   private userSocketsMap: Map<number, Socket[]> = new Map<number, Socket[]>();
 
   private scheduleDataCleanup() {
-    const job = new CronJob('0 0 * * *', async () => {
+    const job = new CronJob('*/15 * * * *', async () => {
       try {
         await this.deleteOldTokens();
+        await this.unmuteUsers();
       } catch (error) {
         console.error('Error deleting blocked users:', error);
       }
     });
 
     job.start();
+  }
+
+  async unmuteUsers() {
+    const users = await this.prisma.user.findMany();
+    for (const user of users) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { isMuted: { set: [] } },
+      });
+    }
   }
 
   async handleGetAllUsers() {
