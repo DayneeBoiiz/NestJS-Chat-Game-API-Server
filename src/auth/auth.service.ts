@@ -135,8 +135,6 @@ export class AuthService {
       });
     }
 
-    // await this.userService.onlineState(user);
-
     const access_token = await this.signToken(user.id, user.email);
     return {
       isTwoFactorEnabled: isTwoFactorEnabled,

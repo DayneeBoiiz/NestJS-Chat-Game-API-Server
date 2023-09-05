@@ -173,6 +173,72 @@ export class ChatController {
     }
   }
 
+  @Post('mute')
+  async handleMute(@GetUser() user: User, @Body() data: any) {
+    const { conversationId, targetUser } = data;
+    await this.chatService.handleMute(user.id, conversationId, targetUser);
+  }
+  //ban
+  // @Post('ban')
+  // async handleBan(@GetUser() user: User, @Body() data: any) {
+  //   console.log(user);
+  //   const { conversationId, targetUser } = data;
+  //   await this.chatService.handleBan(user.id, conversationId, targetUser);
+  //   console.log(user);
+  // }
+  // //kick
+  // @Post('kick')
+  // async handleKick(@GetUser() user: User, @Body() data: any) {
+  //   console.log(user);
+  //   const { conversationId, targetUser } = data;
+  //   await this.chatService.handleKick(user.id, conversationId, targetUser);
+  //   console.log(user);
+  // }
+
+  @Post('setadmin')
+  async handleSetAdmin(@GetUser() user: User, @Body() data: any) {
+    try {
+      const { conversationId, updatedUser } = data;
+
+      return await this.chatService.handleSetAdmin(
+        user.id,
+        conversationId,
+        updatedUser,
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Post('removeadmin')
+  async handleRemoceAdmin(@GetUser() user: User, @Body() data: any) {
+    try {
+      const { conversationId, updatedUser } = data;
+
+      return await this.chatService.handleRemoveAdmin(
+        user.id,
+        conversationId,
+        updatedUser,
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Post('channel/set-password')
+  async handleSetChannelPassword(@GetUser() user: User, @Body() data: any) {
+    try {
+      const { conversationId, password } = data;
+      return await this.chatService.handleSetChannelPassword(
+        user.id,
+        conversationId,
+        password,
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   // @Post('setadmin')
   // async handleSetAdmin(
   //   @Req() req: Request,

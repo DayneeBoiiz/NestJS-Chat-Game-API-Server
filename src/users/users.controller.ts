@@ -23,12 +23,16 @@ import { User } from '@prisma/client';
 import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { Token } from 'src/auth/decorator/token.decorator';
 import { JwtBlacklistGuard } from 'src/auth/guard/jwt-blacklist.guard';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @UseGuards(JwtBlacklistGuard)
 @UseGuards(JwtGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private userService: UsersService,
+    private prisma: PrismaService,
+  ) {}
 
   @Patch('/upload/avatar')
   @UseInterceptors(
@@ -74,10 +78,31 @@ export class UsersController {
   @Get(':userId/avatar')
   async getPublicAvatar(@Param('userId') userId: string, @Res() res: Response) {
     try {
-      return await this.userService.getPublicAvatar(userId, res);
+      const userID = parseInt(userId);
+
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: userID,
+        },
+      });
+      if (user.provider === 'intra') {
+        return res.json(user.avatarUrl);
+      } else {
+        return await this.userService.getPublicAvatar(user, res);
+      }
     } catch (error) {
       console.log(error);
       res.send({ error: error.message });
+    }
+  }
+
+  @Get(':username/other')
+  async handleGetOtherUser(@Param('username') username: string) {
+    try {
+      console.log(username);
+      return await this.userService.getOtherUser(username);
+    } catch (error) {
+      console.log(error);
     }
   }
 

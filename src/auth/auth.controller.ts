@@ -18,7 +18,11 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() dto: AuthDtoRegister) {
-    return this.authService.register(dto);
+    try {
+      return this.authService.register(dto);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Post('login')
@@ -31,32 +35,23 @@ export class AuthController {
     }
   }
 
-  @Get('/cookie/login')
-  async CookieLogin(@Req() req: Request) {
-    console.log(req);
-  }
-
   @Get('42/login')
   @UseGuards(FortyTwoStrategy)
-  handle42Login() {
-    return 'Hello World';
-  }
+  handle42Login() {}
 
   @Get('42/callback')
   @UseGuards(FortyTwoStrategy)
   handle42Redirect(@Req() req: Request, @Res() res: Response) {
-    const token = req.user;
-    console.log(token);
-    res.cookie('token', token, { httpOnly: false });
-    res.redirect('/auth/success');
+    try {
+      const token = req.user;
+      console.log(token);
+      res.cookie('token', token, { httpOnly: false });
+      res.redirect('/auth/success');
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Get('success')
-  handleSuccess(@Req() req: Request) {
-    // You can access the user object from the cookie
-    // const token = req.cookies.token;
-    // // Handle the user data or return a response to the frontend
-    // return { token };
-    // console.log(req);
-  }
+  handleSuccess(@Req() req: Request) {}
 }

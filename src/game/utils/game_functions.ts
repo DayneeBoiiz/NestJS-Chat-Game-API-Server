@@ -75,7 +75,6 @@ const checkCollision = (
 
   if (ball.x <= 8) {
     gameTable.player2.score++;
-    // console.log('Player two score ', gameTable.player2.score);
     if (gameTable.player1.score === 5) {
       const result = {
         player1Id: gameTable.player1.id,
@@ -90,12 +89,16 @@ const checkCollision = (
         winner: gameTable.player1.nickname,
       });
     }
+    // console.log('Player two score ', gameTable.player2.score);
+    // server.to(roomName).emit('playerScored', {
+    //   player2Score: gameTable.player2.score,
+    //   player1Score: gameTable.player1.score,
+    // });
     resetBall(ball, true);
   }
 
   if (ball.x + ball.radius >= canvasWidth - 8) {
     gameTable.player1.score++;
-    // console.log('Player one score ', gameTable.player1.score);
     if (gameTable.player1.score === 5) {
       const result = {
         player1Id: gameTable.player1.id,
@@ -110,6 +113,11 @@ const checkCollision = (
         winner: gameTable.player1.nickname,
       });
     }
+    // console.log('Player one score ', gameTable.player1.score);
+    // server.to(roomName).emit('playerScored', {
+    //   player2Score: gameTable.player2.score,
+    //   player1Score: gameTable.player1.score,
+    // });
     resetBall(ball, false);
   }
 };

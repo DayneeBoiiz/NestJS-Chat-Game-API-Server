@@ -27,46 +27,259 @@ export class ChatService {
     private readonly globalGatway: GlobalGateway,
   ) {}
 
-  async handleSetAdmin(roomId: number, userId: number, requestingUser: number) {
-    const isRequestingUserAdmin = await this.prisma.room.findFirst({
-      where: {
-        id: roomId,
-        admins: {
-          some: {
-            id: requestingUser,
-          },
-        },
-      },
-    });
-
-    if (!isRequestingUserAdmin) {
-      throw new UnauthorizedException(
-        'Only admins can set other users as admins',
-      );
-    }
-
+  async handleMute(userID: number, conversationId: string, targetUser: number) {
     try {
-      await this.prisma.room.update({
+      const room = await this.prisma.room.findUnique({
         where: {
-          id: roomId,
-        },
-        data: {
-          users: {
-            connect: {
-              id: userId,
-            },
-          },
-          admins: {
-            connect: {
-              id: userId,
-            },
-          },
+          uid: conversationId,
         },
         include: {
+          owner: true,
           admins: true,
         },
       });
-      console.log(`user ${userId} is now Admin`);
+
+      if (!room) {
+        throw new Error('there is no such room');
+      }
+
+      const existingUser = await this.isUserInRoom(targetUser, room.id);
+
+      if (!existingUser) {
+        throw new Error('User need to be a member of the room');
+      }
+
+      const isOwner = room.owner.id === userID;
+      const isAdmin = room.admins.some((admin) => admin.id === userID);
+
+      if (isOwner || isAdmin) {
+        const target_own = room.owner.id === targetUser;
+        if (target_own) {
+          throw new Error("Admins can't mute owners");
+        }
+
+        const updatedRoom = await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            mutedUsers: {
+              connect: {
+                id: targetUser,
+              },
+            },
+          },
+        });
+        return updatedRoom;
+      } else {
+        throw new UnauthorizedException('Only admin / owner can mute');
+      }
+
+      //   const target = await this.prisma.user.findUnique({
+      //     where: {
+      //       nickname: targetUser,
+      //     },
+      //   });
+      //   if (!target) {
+      //     throw Error('there is no such a user');
+      //   }
+      //   const room = await this.prisma.room.findUnique({
+      //     where: {
+      //       uid: conversationId,
+      //     },
+      //     include: {
+      //       admins: true,
+      //       owner: true,
+      //       users: true,
+      //     },
+      //   });
+      //   if (!room) {
+      //     throw new Error('there is no such room');
+      //   }
+      //   const isOwner = room.owner.id === userId;
+      //   const isAdmin = room.admins.some((admin) => admin.id === userId);
+      //   const isUser = room.users.some((user) => user.id === target.id);
+      //   if (!isOwner || !isAdmin) {
+      //     throw new Error('only Admins and Owner can mute');
+      //   }
+      //   if (!isUser) {
+      //     throw new Error('there is no such a user');
+      //   }
+      //   if (isAdmin) {
+      //     const target_own = room.owner.id === target.id;
+      //     if (target_own) {
+      //       throw new Error("Admins can't mute owners");
+      //     }
+      //   }
+      //   await this.prisma.room.update({
+      //     where: {
+      //       uid: conversationId,
+      //     },
+      //     data: {
+      //       users: {
+      //         update: {
+      //           where: {
+      //             id: target.id,
+      //           },
+      //           data: {
+      //             isMute: true,
+      //           },
+      //         },
+      //       },
+      //     },
+      //   });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleSetAdmin(
+    userID: number,
+    conversationId: string,
+    updatedUser: number,
+  ) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationId,
+        },
+        include: {
+          admins: true,
+          owner: true,
+        },
+      });
+
+      const existingUser = await this.isUserInRoom(updatedUser, room.id);
+
+      if (!existingUser) {
+        throw new Error('User need to be a member of the room');
+      }
+
+      const isAdmin = room.admins.some((admin) => admin.id === userID);
+      const isOwner = room.owner.id === userID;
+
+      if (isAdmin || isOwner) {
+        await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            admins: {
+              connect: {
+                id: updatedUser,
+              },
+            },
+          },
+        });
+      } else {
+        throw new UnauthorizedException(
+          'Only admins can set other users as admins',
+        );
+      }
+
+      console.log(`user ${updatedUser} is now Admin`);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleRemoveAdmin(
+    userID: number,
+    conversationId: string,
+    updatedUser: number,
+  ) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationId,
+        },
+        include: {
+          admins: true,
+          owner: true,
+        },
+      });
+
+      const existingUser = await this.isUserInRoom(updatedUser, room.id);
+
+      if (!existingUser) {
+        throw new Error('User need to be a member of the room');
+      }
+
+      const isAdmin = room.admins.some((admin) => admin.id === userID);
+      const isOwner = room.owner.id === userID;
+
+      if (isAdmin || isOwner) {
+        await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            admins: {
+              disconnect: {
+                id: updatedUser,
+              },
+            },
+          },
+        });
+      } else {
+        throw new UnauthorizedException(
+          'Only admins can set other users as admins',
+        );
+      }
+
+      console.log(`user ${updatedUser} is now normal User`);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleSetChannelPassword(
+    userID: number,
+    conversationdId: string,
+    password: string,
+  ) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationdId,
+        },
+        include: {
+          owner: true,
+        },
+      });
+
+      if (room.isProtected) {
+        throw new Error('Room already protected with password');
+      }
+
+      if (!room) {
+        throw new Error('room not found');
+      }
+
+      const isOwner = room.owner.id === userID;
+
+      if (isOwner) {
+        const hash = await argon.hash(password);
+
+        const updatedRoom = await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            isGroup: null,
+            isPrivate: null,
+            isPrivateKey: null,
+            isProtected: true,
+            password: hash,
+          },
+        });
+
+        return updatedRoom;
+      } else {
+        throw new UnauthorizedException(
+          'you have to be the Channel Owner to do that',
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -611,6 +824,30 @@ export class ChatService {
     message: string,
   ) {
     try {
+      // const checkUser = await this.prisma.user.findUnique({
+      //   where: {
+      //     id: userID,
+      //   },
+      // });
+      // if (checkUser.isMute) {
+      //   throw new Error("the user is mute can't send message");
+      // }
+
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationdId,
+        },
+        include: {
+          mutedUsers: true,
+        },
+      });
+
+      const isMuted = room.mutedUsers.some((user) => user.id === userID);
+
+      if (isMuted) {
+        throw new Error('You are Muted');
+      }
+
       const newMessage = await this.prisma.message.create({
         data: {
           content: message,
@@ -1034,6 +1271,7 @@ export class ChatService {
               createdAt: true,
               sender: {
                 select: {
+                  id: true,
                   avatarUrl: true,
                   nickname: true,
                   provider: true,
@@ -1044,11 +1282,11 @@ export class ChatService {
         },
       });
 
-      const currentUserId = userID;
+      // const currentUserId = userID;
 
-      if (room && room.users) {
-        room.users = this.transformUsers(room.users, currentUserId);
-      }
+      // if (room && room.users) {
+      //   room.users = this.transformUsers(room.users, currentUserId);
+      // }
 
       const isMember = await this.isUserInRoom(userID, room.id);
 

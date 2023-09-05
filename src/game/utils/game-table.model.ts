@@ -153,6 +153,13 @@ export class GameManager {
           this.gameService,
         );
 
+        server.to(roomName).emit('playerScored', {
+          player2Score: this.gameTable.player2.score,
+          player1Score: this.gameTable.player1.score,
+        });
+
+        // console.log(this.gameTable.player1.score);
+
         server.to(roomName).emit('BallPositionUpdated', {
           ball: {
             x: this.gameTable.ball.x,

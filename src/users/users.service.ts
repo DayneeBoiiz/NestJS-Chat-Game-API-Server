@@ -842,28 +842,20 @@ export class UsersService {
     }
   }
 
-  async getPublicAvatar(userId: string, res: Response) {
+  async getPublicAvatar(user: User, res: Response) {
     try {
-      const userID = parseInt(userId);
-
-      const find_user = await this.prisma.user.findUnique({
-        where: {
-          id: userID,
-        },
-      });
-
       // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
 
-      if (!find_user) {
+      if (!user) {
         throw new NotFoundException('user not found');
       }
 
       //if the user has the default avatar
-      if (find_user.avatarUrl === 'default_avatar.png') {
+      if (user.avatarUrl === 'default_avatar.png') {
         const absolutePath = path.join(
           __dirname,
           this.config.get('DEFAULT_AVATAR_PATH'),
-          find_user.avatarUrl,
+          user.avatarUrl,
         );
         // console.log(absolutePath);
         return res.sendFile(absolutePath);
@@ -873,7 +865,7 @@ export class UsersService {
         const absolutePath = path.join(
           __dirname,
           this.config.get('AVATAR_PATH'),
-          find_user.avatarUrl,
+          user.avatarUrl,
         );
         // console.log(absolutePath);
         return res.sendFile(absolutePath);
@@ -923,5 +915,23 @@ export class UsersService {
     }
 
     return false;
+  }
+
+  async getOtherUser(username: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          nickname: username,
+        },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

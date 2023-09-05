@@ -57,6 +57,8 @@ model User {
 
   invitePlayer1 GameInvite? @relation("Player1Invite")
   invitePlayer2 GameInvite? @relation("Player2Invite")
+
+  isMuted Room[] @relation("mutedUsers")
 }
 
 model Room {
@@ -79,6 +81,8 @@ model Room {
 
   users    User[]
   messages Message[]
+
+  mutedUsers User[] @relation("mutedUsers")
 }
 
 model Message {
