@@ -22,17 +22,6 @@ import { Result } from 'src/auth/utils/types';
 export class GameController {
   constructor(private gameService: GameService) {}
 
-  @Post('save')
-  async handleSaveGame(@Body() data: { result: Result }) {
-    try {
-      const { result } = data;
-
-      // return await this.gameService.handleSaveGame(result);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   @Get('my-games')
   async handleGetMyGames(@GetUser() user: User) {
     try {

@@ -72,6 +72,7 @@ model Room {
   isProtected Boolean?
   isGroup   Boolean?
   password  String?
+  isChannel Boolean?
 
   uid String @unique
   admins User[] @relation("AdminRooms")

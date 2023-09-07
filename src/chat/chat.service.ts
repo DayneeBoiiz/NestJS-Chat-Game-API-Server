@@ -16,6 +16,7 @@ import { ChatGateway } from './chat.gateway';
 // import { GlobalGateway } from 'src/global/global.gateway';
 import { User } from '@prisma/client';
 import { CoreGateway } from 'src/core/core.gateway';
+import { MainGateway } from 'src/main/main.gateway';
 
 @Injectable()
 export class ChatService {
@@ -24,8 +25,8 @@ export class ChatService {
     private readonly jwtService: JwtService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGatway: ChatGateway,
-    @Inject(forwardRef(() => CoreGateway))
-    private readonly globalGatway: CoreGateway,
+    @Inject(forwardRef(() => MainGateway))
+    private readonly globalGatway: MainGateway,
   ) {}
 
   async handleMute(userID: number, conversationId: string, targetUser: number) {
@@ -545,6 +546,7 @@ export class ChatService {
         data: {
           name: name,
           uid: uuidv4(),
+          isChannel: true,
           isPrivate: true,
           isPrivateKey: this.uniqueCode(),
           ownerID: userID,
@@ -590,6 +592,8 @@ export class ChatService {
         });
       }
 
+      this.globalGatway.server.emit('conversation:new', room);
+
       return room;
     } catch (error) {
       return { error: error.message };
@@ -623,6 +627,7 @@ export class ChatService {
         data: {
           name: name,
           uid: uuidv4(),
+          isChannel: true,
           isProtected: true,
           ownerID: userID,
           password: hash,
@@ -668,6 +673,8 @@ export class ChatService {
         });
       }
 
+      this.globalGatway.server.emit('conversation:new', room);
+
       return room;
     } catch (error) {
       return { error: error.message };
@@ -694,6 +701,7 @@ export class ChatService {
         data: {
           name: name,
           uid: uuidv4(),
+          isChannel: true,
           isGroup: true,
           ownerID: userID,
           admins: {
@@ -735,6 +743,8 @@ export class ChatService {
           },
         });
       }
+
+      this.globalGatway.server.emit('conversation:new', room);
 
       return room;
     } catch (error) {
@@ -825,15 +835,6 @@ export class ChatService {
     message: string,
   ) {
     try {
-      // const checkUser = await this.prisma.user.findUnique({
-      //   where: {
-      //     id: userID,
-      //   },
-      // });
-      // if (checkUser.isMute) {
-      //   throw new Error("the user is mute can't send message");
-      // }
-
       const room = await this.prisma.room.findUnique({
         where: {
           uid: conversationdId,
@@ -1228,6 +1229,7 @@ export class ChatService {
               id: userID,
             },
           },
+          isChannel: true,
         },
         include: {
           users: true,
@@ -1245,13 +1247,6 @@ export class ChatService {
     } catch (error) {
       return { error: error.message };
     }
-  }
-
-  transformUsers(users: any[], currentUserId: number) {
-    return users.map((user) => {
-      const { hash, ...userWithoutHash } = user;
-      return userWithoutHash;
-    });
   }
 
   async handleGetChannelDetails(userID: number, conversationdID: string) {
@@ -1282,12 +1277,6 @@ export class ChatService {
           },
         },
       });
-
-      // const currentUserId = userID;
-
-      // if (room && room.users) {
-      //   room.users = this.transformUsers(room.users, currentUserId);
-      // }
 
       const isMember = await this.isUserInRoom(userID, room.id);
 
