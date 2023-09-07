@@ -11,8 +11,10 @@ import {
 } from './utils/game-table.model';
 import { moveBall } from './utils/game_functions';
 import { Result } from 'src/auth/utils/types';
-import { GlobalGateway } from 'src/global/global.gateway';
+// import { GlobalGateway } from 'src/global/global.gateway';
 import Pusher from 'pusher';
+import { CoreGateway } from 'src/core/core.gateway';
+import { UsersService } from 'src/users/users.service';
 
 enum PlayOption {
   PlayWithBot = 'playWithBot',
@@ -29,8 +31,9 @@ export class GameService {
 
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => GlobalGateway))
-    private readonly globalGatway: GlobalGateway,
+    @Inject(forwardRef(() => CoreGateway))
+    private readonly globalGatway: CoreGateway,
+    private userService: UsersService,
     @Inject('PUSHER') private readonly pusher: Pusher,
   ) {
     this.gameManager = new GameManager(this.server, this);
@@ -90,6 +93,10 @@ export class GameService {
     const player1 = new Player(player1Id, player1Username, player1SocketId);
     const player2 = new Player(player2Id, player2Username, player2Socketid);
 
+    // console.log(player1);
+    // console.log(player2);
+    // console.log(roomName);
+
     const players = [player1, player2];
     const gameManager = new GameManager(server, this);
 
@@ -103,6 +110,9 @@ export class GameService {
     // console.log(gameManager);
 
     // server.to(roomName).emit('gameStarted');
+
+    this.userService.ongameStats(player1.id);
+    this.userService.ongameStats(player2.id);
 
     gameManager.startGame(players, server, player1Id, roomName);
   }
@@ -191,62 +201,30 @@ export class GameService {
     }
   }
 
-  async handleSendInvite(userID: number, reciever: string) {
-    try {
-      const recipient = await this.prisma.user.findUnique({
-        where: {
-          nickname: reciever,
-        },
-      });
-
-      if (!recipient) {
-        throw new Error('Friend Not Found');
-      }
-
-      const invite = await this.prisma.gameInvite.create({
-        data: {
-          player1Id: userID,
-          player2Id: recipient.id,
-        },
-        include: {
-          player1: {
-            select: {
-              nickname: true,
-            },
-          },
-        },
-      });
-
-      if (!invite) {
-        throw new Error("Can't send Invite");
-      }
-
-      const recipientChannel = recipient.nickname;
-      // this.pusher.post()
-
-      console.log(
-        `Triggering invite:new event on channel: ${recipientChannel}`,
-      );
-
-      this.pusher.trigger(recipientChannel, 'invite:new', {
-        sender: invite.player1.nickname,
-      });
-
-      return invite;
-    } catch (error) {
-      console.log(error);
-    }
+  setOnline(player1Id: number, player2Id: number) {
+    this.userService.onlineState(player1Id);
+    this.userService.onlineState(player2Id);
   }
 
-  async handleGetMyInvites(userID: number) {
+  async handleGetMyGames(userID: number) {
     try {
-      const invites = await this.prisma.gameInvite.findMany({
+      const userMatches = await this.prisma.match.findMany({
         where: {
-          player2Id: userID,
+          OR: [{ player1Id: userID }, { player2Id: userID }],
+        },
+        include: {
+          winner: true,
         },
       });
 
-      return invites;
+      const winCount = userMatches.reduce((count, match) => {
+        if (match.winnerId === userID) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+
+      return { matches: userMatches, winCount };
     } catch (error) {
       console.log(error);
     }

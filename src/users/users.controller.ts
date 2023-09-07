@@ -99,7 +99,6 @@ export class UsersController {
   @Get(':username/other')
   async handleGetOtherUser(@Param('username') username: string) {
     try {
-      console.log(username);
       return await this.userService.getOtherUser(username);
     } catch (error) {
       console.log(error);

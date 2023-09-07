@@ -14,7 +14,7 @@ import { GameService } from './game.service';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from '@prisma/client';
 import { Result } from 'src/auth/utils/types';
-import { GlobalGateway } from 'src/global/global.gateway';
+// import { GlobalGateway } from 'src/global/global.gateway';
 
 @UseGuards(JwtBlacklistGuard)
 @UseGuards(JwtGuard)
@@ -24,7 +24,6 @@ export class GameController {
 
   @Post('save')
   async handleSaveGame(@Body() data: { result: Result }) {
-    
     try {
       const { result } = data;
 
@@ -34,22 +33,10 @@ export class GameController {
     }
   }
 
-  @Post('send-invite/:reciever')
-  async handleSendInvite(
-    @GetUser() user: User,
-    @Param('reciever') reciever: string,
-  ) {
+  @Get('my-games')
+  async handleGetMyGames(@GetUser() user: User) {
     try {
-      return await this.gameService.handleSendInvite(user.id, reciever);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  @Get('myinvites')
-  async handleGetMyInvite(@GetUser() user: User) {
-    try {
-      return await this.gameService.handleGetMyInvites(user.id);
+      return await this.gameService.handleGetMyGames(user.id);
     } catch (error) {
       console.log(error);
     }

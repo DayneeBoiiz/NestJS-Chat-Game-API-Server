@@ -84,6 +84,7 @@ const checkCollision = (
         player2Score: gameTable.player2.score,
       };
       gameService.handleSaveGame(result);
+      gameService.setOnline(gameTable.player1.id, gameTable.player2.id);
 
       server.to(roomName).emit('gameEnded', {
         winner: gameTable.player1.nickname,
@@ -108,6 +109,7 @@ const checkCollision = (
         player2Score: gameTable.player2.score,
       };
       gameService.handleSaveGame(result);
+      gameService.setOnline(gameTable.player1.id, gameTable.player2.id);
 
       server.to(roomName).emit('gameEnded', {
         winner: gameTable.player1.nickname,

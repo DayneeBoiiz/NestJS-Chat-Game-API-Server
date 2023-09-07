@@ -11,11 +11,14 @@ import { ChatService } from './chat/chat.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat/chat.controller';
 import { GameModule } from './game/game.module';
-import { GlobalGateway } from './global/global.gateway';
+// import { GlobalGateway } from './global/global.gateway';
 import { UsersService } from './users/users.service';
-import { GlobalModule } from './global/global.module';
-import { GlobalService } from './global/global.service';
+// import { GlobalModule } from './global/global.module';
+// import { GlobalService } from './global/global.service';
 import { PusherModule } from './pusher/pusher.module';
+import { CoreGateway } from './core/core.gateway';
+import { CoreModule } from './core/core.module';
+import { MainGateway } from './main/main.gateway';
 
 @Module({
   imports: [
@@ -26,19 +29,19 @@ import { PusherModule } from './pusher/pusher.module';
       secret: process.env.JWT_SECRET,
     }),
     GameModule,
-    GlobalModule,
     UsersModule,
     PusherModule,
+    CoreModule,
   ],
   controllers: [TwoFactorAuthenticationController, ChatController],
   providers: [
     PrismaService,
     TwoFactorAuthenticationService,
     ChatGateway,
-    GlobalGateway,
     ChatService,
-    GlobalService,
     UsersService,
+    CoreGateway,
+    MainGateway,
   ],
 })
 export class AppModule {}

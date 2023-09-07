@@ -14,7 +14,7 @@ import { GameManager, GameTable } from './utils/game-table.model';
 enum PlayOption {
   PlayWithBot = 'playWithBot',
   PlayWithRandom = 'playWithRandom',
-  InviteFriend = 'inviteFriend',
+  privateGame = 'privateGame',
 }
 
 // enum Direction {
@@ -51,10 +51,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     player2SocketId: string;
   }> = new Set();
 
-  private pendingFriendInvitations: Map<
+  private privateGameQueue = new Map<
     string,
-    { userId: number; username: string; roomName: string }
-  > = new Map();
+    { id: number; username: string; socketId: string }
+  >();
 
   private isRoomFull(roomName: string): boolean {
     const roomExists = this.fullRooms.some((room) => room === roomName);
@@ -69,19 +69,24 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinQueue')
   handleJoinQueue(
     client: Socket,
-    data: { id: number; username: string; playOption: PlayOption },
+    data: {
+      id: number;
+      username: string;
+      playOption: PlayOption;
+      roomName?: string;
+    },
   ) {
-    const { id, username, playOption } = data;
+    const { id, username, playOption, roomName } = data;
 
     switch (playOption) {
       case PlayOption.PlayWithBot:
-        this.gameService.addUserToQueue(
-          id,
-          username,
-          client.id,
-          playOption,
-          this.server,
-        );
+        // this.gameService.addUserToQueue(
+        //   id,
+        //   username,
+        //   client.id,
+        //   playOption,
+        //   this.server,
+        // );
         console.log('Joining queue to play with a bot');
         break;
 
@@ -148,30 +153,49 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
         break;
 
-      case PlayOption.InviteFriend:
+      case PlayOption.privateGame:
+        if (roomName) {
+          const waitingPlayer = this.privateGameQueue.get(roomName);
+
+          if (waitingPlayer) {
+            const player1 = waitingPlayer;
+            const player2 = {
+              id,
+              username,
+              socketId: client.id,
+            };
+
+            const uniqueRoomName = roomName || `room-${uuidv4()}`;
+
+            client.join(uniqueRoomName);
+
+            this.gameService.startGameWithRandom(
+              player1.id,
+              player1.username,
+              player1.socketId,
+              player2.id,
+              player2.username,
+              client.id,
+              uniqueRoomName,
+              this.server,
+              this.gamesManagers,
+            );
+
+            this.privateGameQueue.delete(roomName);
+          } else {
+            client.join(roomName);
+            this.privateGameQueue.set(roomName, {
+              id,
+              username,
+              socketId: client.id,
+            });
+          }
+        }
         break;
 
       default:
         console.log('Invalid play option');
         break;
-    }
-  }
-
-  handleFriendAcceptsInvitation(friendSocketId: string) {
-    // Get the stored information about the invitation
-    const invitationInfo = this.pendingFriendInvitations.get(friendSocketId);
-
-    if (invitationInfo) {
-      // The friend has accepted the invitation and joined the room
-      const { roomName } = invitationInfo;
-
-      // Use the Socket.IO server to emit an event to the friend's socket
-      this.server
-        .to(roomName)
-        .emit('friendJoined', { message: 'Your friend has joined the room!' });
-
-      // You can also remove the stored invitation information
-      this.pendingFriendInvitations.delete(friendSocketId);
     }
   }
 
@@ -185,12 +209,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('paddlePositionUpdate')
   handlePaddleUpdate(client: Socket, data: any) {
     const { playerId, paddlePosition, roomName } = data;
-    // console.log(data);
-    // this.gameService.updatePaddlePosition(playerId, paddlePosition);
 
     const gameManagerForRoom = this.getGameManagerByRoom(roomName);
-    // console.log(gameManagerForRoom);
-    // console.log(playerId);
     gameManagerForRoom.updatePaddlePosition(playerId, paddlePosition);
   }
 

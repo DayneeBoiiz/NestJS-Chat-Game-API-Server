@@ -3,7 +3,6 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  UseGuards,
   forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -16,9 +15,9 @@ import { Response } from 'express';
 import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { NewPassDto, UsernameDto } from 'src/auth/dto';
-import { GlobalGateway } from 'src/global/global.gateway';
 import { Socket } from 'socket.io';
-import { NotFoundError } from 'rxjs';
+import { CoreGateway } from 'src/core/core.gateway';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UsersService {
@@ -26,8 +25,8 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
-    @Inject(forwardRef(() => GlobalGateway))
-    private readonly globalGatway: GlobalGateway,
+    @Inject(forwardRef(() => CoreGateway))
+    private readonly globalGatway: CoreGateway,
   ) {
     this.scheduleDataCleanup();
   }
@@ -64,6 +63,17 @@ export class UsersService {
 
   async addToBlockedTokens(token: string): Promise<void> {
     await this.prisma.blockedTokens.create({ data: { token } });
+  }
+
+  async ongameStats(userID: number) {
+    await this.prisma.user.update({
+      where: {
+        id: userID,
+      },
+      data: {
+        state: 'playing',
+      },
+    });
   }
 
   async onlineState(userID: number) {
@@ -913,19 +923,58 @@ export class UsersService {
     }
   }
 
-  sendInvite(friendID: number, sender: string) {
-    if (this.userSocketsMap.has(friendID)) {
-      const friendSockets = this.userSocketsMap.get(friendID);
+  handleAcceptInvite(player1: number, player2: number) {
+    let player1Socket: Socket;
+    let player2Socket: Socket;
+    if (this.userSocketsMap.has(player1)) {
+      const player1Sockets = this.userSocketsMap.get(player1);
 
-      if (friendSockets && friendSockets.length > 0) {
-        friendSockets[0].emit('IncomingInvite', {
-          sender: sender,
-        });
-        return true;
+      if (player1Sockets && player1Sockets.length > 0) {
+        player1Socket = player1Sockets[0];
+      }
+    }
+    if (this.userSocketsMap.has(player2)) {
+      const player2Sockets = this.userSocketsMap.get(player2);
+
+      if (player2Sockets && player2Sockets.length > 0) {
+        player2Socket = player2Sockets[0];
       }
     }
 
-    return false;
+    const roomID = uuidv4();
+
+    player1Socket.emit('game:redirect', roomID);
+    player2Socket.emit('game:redirect', roomID);
+  }
+
+  async sendInvite(friendID: number, sender: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: friendID,
+        },
+      });
+
+      if (user.state === 'playing') {
+        throw new NotFoundException('User is Playing');
+      }
+
+      if (this.userSocketsMap.has(friendID)) {
+        const friendSockets = this.userSocketsMap.get(friendID);
+
+        // console.log(friendSockets[0].id);
+        if (friendSockets && friendSockets.length > 0) {
+          friendSockets[0].emit('IncomingInvite', {
+            sender: sender,
+          });
+          return true;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async getOtherUser(username: string) {

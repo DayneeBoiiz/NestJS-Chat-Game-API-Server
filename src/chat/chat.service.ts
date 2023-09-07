@@ -13,8 +13,9 @@ import * as argon from 'argon2';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatGateway } from './chat.gateway';
-import { GlobalGateway } from 'src/global/global.gateway';
+// import { GlobalGateway } from 'src/global/global.gateway';
 import { User } from '@prisma/client';
+import { CoreGateway } from 'src/core/core.gateway';
 
 @Injectable()
 export class ChatService {
@@ -23,8 +24,8 @@ export class ChatService {
     private readonly jwtService: JwtService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGatway: ChatGateway,
-    @Inject(forwardRef(() => GlobalGateway))
-    private readonly globalGatway: GlobalGateway,
+    @Inject(forwardRef(() => CoreGateway))
+    private readonly globalGatway: CoreGateway,
   ) {}
 
   async handleMute(userID: number, conversationId: string, targetUser: number) {

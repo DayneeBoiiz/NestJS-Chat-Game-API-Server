@@ -138,6 +138,8 @@ export class GameManager {
     this.gameTable.player2.score = 0;
     this.gameTable.roomName = roomName;
 
+    // this.gameService.
+
     // console.log(this.gameTable.player1);
     // console.log(this.gameTable.player2);
 
