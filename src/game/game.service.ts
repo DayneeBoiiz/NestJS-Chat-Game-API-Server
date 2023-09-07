@@ -214,6 +214,8 @@ export class GameService {
         },
         include: {
           winner: true,
+          player1: true,
+          player2: true,
         },
       });
 
