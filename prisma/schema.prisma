@@ -59,6 +59,7 @@ model User {
   invitePlayer2 GameInvite? @relation("Player2Invite")
 
   isMuted Room[] @relation("mutedUsers")
+  isBanned Room[] @relation("bannedUsers")
 }
 
 model Room {
@@ -84,6 +85,7 @@ model Room {
   messages Message[]
 
   mutedUsers User[] @relation("mutedUsers")
+  bannedUsers User[] @relation("bannedUsers")
 }
 
 model Message {

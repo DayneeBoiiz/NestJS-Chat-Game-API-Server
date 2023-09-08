@@ -2,20 +2,15 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  Req,
   UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import * as argon from 'argon2';
-import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatGateway } from './chat.gateway';
-// import { GlobalGateway } from 'src/global/global.gateway';
 import { User } from '@prisma/client';
-import { CoreGateway } from 'src/core/core.gateway';
 import { MainGateway } from 'src/main/main.gateway';
 
 @Injectable()
@@ -130,6 +125,54 @@ export class ChatService {
       //       },
       //     },
       //   });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleBan(userID: number, conversationId: string, targetUser: number) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationId,
+        },
+        include: {
+          owner: true,
+          admins: true,
+        },
+      });
+
+      const existingUser = await this.isUserInRoom(targetUser, room.id);
+
+      if (!existingUser) {
+        throw new Error('User need to be a member of the room');
+      }
+
+      const isOwner = room.owner.id === userID;
+      const isAdmin = room.admins.some((admin) => admin.id === userID);
+
+      if (isOwner || isAdmin) {
+        const target_own = room.owner.id === targetUser;
+        if (target_own) {
+          throw new Error("Admins can't mute owners");
+        }
+
+        const updatedRoom = await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            bannedUsers: {
+              connect: {
+                id: targetUser,
+              },
+            },
+          },
+        });
+        return updatedRoom;
+      } else {
+        throw new UnauthorizedException('Only admin / owner can mute');
+      }
     } catch (error) {
       console.log(error);
     }
@@ -829,12 +872,42 @@ export class ChatService {
     }
   }
 
+  async isBlocked(userID: number, conversationId: string): Promise<boolean> {
+    const conversation = await this.prisma.room.findUnique({
+      where: {
+        uid: conversationId,
+      },
+      include: {
+        users: {
+          include: {
+            blockedUsers: true,
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found.');
+    }
+
+    const userBlockedBy = conversation.users.find((user) => user.id === userID);
+
+    return !!userBlockedBy?.blockedUsers;
+  }
+
   async handleSendMessage(
     userID: number,
     conversationdId: string,
     message: string,
   ) {
     try {
+      // const isBlocked = await this.isBlocked(userID, conversationdId);
+      // if (isBlocked) {
+      //   throw new Error(
+      //     'You are blocked from sending messages in this conversation.',
+      //   );
+      // }
+
       const room = await this.prisma.room.findUnique({
         where: {
           uid: conversationdId,

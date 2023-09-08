@@ -564,6 +564,7 @@ export class UsersService {
 
   async handleUnblockUser(userName: string, blockedUserName: string) {
     try {
+
       const blockedUser = await this.prisma.user.findUnique({
         where: {
           nickname: blockedUserName,

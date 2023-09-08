@@ -13,8 +13,6 @@ import { JwtBlacklistGuard } from 'src/auth/guard/jwt-blacklist.guard';
 import { GameService } from './game.service';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from '@prisma/client';
-import { Result } from 'src/auth/utils/types';
-// import { GlobalGateway } from 'src/global/global.gateway';
 
 @UseGuards(JwtBlacklistGuard)
 @UseGuards(JwtGuard)
@@ -26,6 +24,15 @@ export class GameController {
   async handleGetMyGames(@GetUser() user: User) {
     try {
       return await this.gameService.handleGetMyGames(user.id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get('leaderboard')
+  async handleGetLeaderboard() {
+    try {
+      return await this.gameService.handleGetLeaderboard();
     } catch (error) {
       console.log(error);
     }

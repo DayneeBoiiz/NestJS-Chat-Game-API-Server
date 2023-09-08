@@ -178,14 +178,16 @@ export class ChatController {
     const { conversationId, targetUser } = data;
     await this.chatService.handleMute(user.id, conversationId, targetUser);
   }
-  //ban
-  // @Post('ban')
-  // async handleBan(@GetUser() user: User, @Body() data: any) {
-  //   console.log(user);
-  //   const { conversationId, targetUser } = data;
-  //   await this.chatService.handleBan(user.id, conversationId, targetUser);
-  //   console.log(user);
-  // }
+
+  // ban;
+  @Post('ban')
+  async handleBan(@GetUser() user: User, @Body() data: any) {
+    console.log(user);
+    const { conversationId, targetUser } = data;
+    await this.chatService.handleBan(user.id, conversationId, targetUser);
+    console.log(user);
+  }
+
   // //kick
   // @Post('kick')
   // async handleKick(@GetUser() user: User, @Body() data: any) {

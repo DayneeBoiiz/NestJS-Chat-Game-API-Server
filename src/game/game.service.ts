@@ -231,4 +231,25 @@ export class GameService {
       console.log(error);
     }
   }
+
+  async handleGetLeaderboard() {
+    try {
+      const leaderboard = await this.prisma.user.findMany({
+        include: {
+          matchesAsWinner: true,
+        },
+      });
+
+      const usersWithWins = leaderboard.map((user) => ({
+        ...user,
+        wins: user.matchesAsWinner.length,
+      }));
+
+      const sortedLeaderboard = usersWithWins.sort((a, b) => b.wins - a.wins);
+
+      return sortedLeaderboard;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
