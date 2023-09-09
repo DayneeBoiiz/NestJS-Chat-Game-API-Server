@@ -227,6 +227,7 @@ export class UsersController {
       return await this.userService.handleBlockUser(user.id, username);
     } catch (error) {
       console.log(error);
+      return { error: error.message };
     }
   }
 

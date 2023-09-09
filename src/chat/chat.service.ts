@@ -52,7 +52,7 @@ export class ChatService {
       if (isOwner || isAdmin) {
         const target_own = room.owner.id === targetUser;
         if (target_own) {
-          throw new Error("Admins can't mute owners");
+          throw new Error("Admins can't mute owner");
         }
 
         const updatedRoom = await this.prisma.room.update({
@@ -71,60 +71,6 @@ export class ChatService {
       } else {
         throw new UnauthorizedException('Only admin / owner can mute');
       }
-
-      //   const target = await this.prisma.user.findUnique({
-      //     where: {
-      //       nickname: targetUser,
-      //     },
-      //   });
-      //   if (!target) {
-      //     throw Error('there is no such a user');
-      //   }
-      //   const room = await this.prisma.room.findUnique({
-      //     where: {
-      //       uid: conversationId,
-      //     },
-      //     include: {
-      //       admins: true,
-      //       owner: true,
-      //       users: true,
-      //     },
-      //   });
-      //   if (!room) {
-      //     throw new Error('there is no such room');
-      //   }
-      //   const isOwner = room.owner.id === userId;
-      //   const isAdmin = room.admins.some((admin) => admin.id === userId);
-      //   const isUser = room.users.some((user) => user.id === target.id);
-      //   if (!isOwner || !isAdmin) {
-      //     throw new Error('only Admins and Owner can mute');
-      //   }
-      //   if (!isUser) {
-      //     throw new Error('there is no such a user');
-      //   }
-      //   if (isAdmin) {
-      //     const target_own = room.owner.id === target.id;
-      //     if (target_own) {
-      //       throw new Error("Admins can't mute owners");
-      //     }
-      //   }
-      //   await this.prisma.room.update({
-      //     where: {
-      //       uid: conversationId,
-      //     },
-      //     data: {
-      //       users: {
-      //         update: {
-      //           where: {
-      //             id: target.id,
-      //           },
-      //           data: {
-      //             isMute: true,
-      //           },
-      //         },
-      //       },
-      //     },
-      //   });
     } catch (error) {
       console.log(error);
     }
@@ -154,7 +100,7 @@ export class ChatService {
       if (isOwner || isAdmin) {
         const target_own = room.owner.id === targetUser;
         if (target_own) {
-          throw new Error("Admins can't mute owners");
+          throw new Error("Admins can't mute owner");
         }
 
         const updatedRoom = await this.prisma.room.update({
@@ -169,9 +115,49 @@ export class ChatService {
             },
           },
         });
+
+        this.handleLeaveRoom(room.uid, targetUser);
         return updatedRoom;
       } else {
         throw new UnauthorizedException('Only admin / owner can mute');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async handleKick(
+    userID: number,
+    conversationdId: string,
+    targetUser: number,
+  ) {
+    try {
+      const room = await this.prisma.room.findUnique({
+        where: {
+          uid: conversationdId,
+        },
+        include: {
+          owner: true,
+          admins: true,
+        },
+      });
+
+      const existingUser = await this.isUserInRoom(targetUser, room.id);
+
+      if (!existingUser) {
+        throw new Error('User need to be a member of the room');
+      }
+
+      const isOwner = room.owner.id === userID;
+      const isAdmin = room.admins.some((admin) => admin.id === userID);
+
+      if (isOwner || isAdmin) {
+        const target_own = room.owner.id === targetUser;
+        if (target_own) {
+          throw new Error("Admins can't kick owner");
+        }
+
+        this.handleLeaveRoom(room.uid, targetUser);
       }
     } catch (error) {
       console.log(error);
@@ -872,27 +858,32 @@ export class ChatService {
     }
   }
 
-  async isBlocked(userID: number, conversationId: string): Promise<boolean> {
-    const conversation = await this.prisma.room.findUnique({
+  async isBlocked(userID: number, otherUserID: number): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
       where: {
-        uid: conversationId,
+        id: userID,
       },
       include: {
-        users: {
-          include: {
-            blockedUsers: true,
+        blockedUsers: {
+          where: {
+            blockedUserID: otherUserID,
+          },
+        },
+        usersBlockedBy: {
+          where: {
+            blockedUserID: userID,
           },
         },
       },
     });
 
-    if (!conversation) {
-      throw new NotFoundException('Conversation not found.');
+    if (!user) {
+      throw new NotFoundException('User not found.');
     }
 
-    const userBlockedBy = conversation.users.find((user) => user.id === userID);
+    // const userBlockedBy = user.blockedUsers;
 
-    return !!userBlockedBy?.blockedUsers;
+    return user.blockedUsers.length > 0 || user.usersBlockedBy.length > 0;
   }
 
   async handleSendMessage(
@@ -901,21 +892,31 @@ export class ChatService {
     message: string,
   ) {
     try {
-      // const isBlocked = await this.isBlocked(userID, conversationdId);
-      // if (isBlocked) {
-      //   throw new Error(
-      //     'You are blocked from sending messages in this conversation.',
-      //   );
-      // }
-
       const room = await this.prisma.room.findUnique({
         where: {
           uid: conversationdId,
         },
         include: {
+          users: true,
           mutedUsers: true,
         },
       });
+
+      if (!room) {
+        throw new Error('Room not found');
+      }
+
+      const otherUser = room.users.find((user) => user.id !== userID);
+
+      const isBlocked = await this.isBlocked(userID, otherUser.id);
+
+      console.log(isBlocked);
+
+      if (isBlocked) {
+        throw new Error(
+          'You are blocked from sending messages in this conversation.',
+        );
+      }
 
       const isMuted = room.mutedUsers.some((user) => user.id === userID);
 
@@ -1158,10 +1159,19 @@ export class ChatService {
           uid: conversationdID,
           isGroup: true,
         },
+        include: {
+          bannedUsers: true,
+        },
       });
 
       if (!room) {
         throw new NotFoundException('Public room not found');
+      }
+
+      const isBanned = room.bannedUsers.some((user) => user.id === userID);
+
+      if (isBanned) {
+        throw new Error('You are banned from the channel');
       }
 
       const isMember = await this.isUserInRoom(userID, room.id);
@@ -1202,11 +1212,18 @@ export class ChatService {
           users: true,
           owner: true,
           admins: true,
+          bannedUsers: true,
         },
       });
 
       if (!room) {
         throw new NotFoundException('Public room not found');
+      }
+
+      const isBanned = room.bannedUsers.some((user) => user.id === userID);
+
+      if (isBanned) {
+        throw new Error('You are banned from the channel');
       }
 
       const isMember = await this.isUserInRoom(userID, room.id);
@@ -1243,7 +1260,7 @@ export class ChatService {
     password: string,
   ) {
     try {
-      const room = await this.prisma.room.findFirst({
+      const room = await this.prisma.room.findUnique({
         where: {
           uid: conversationdID,
           isProtected: true,
@@ -1252,11 +1269,18 @@ export class ChatService {
           users: true,
           owner: true,
           admins: true,
+          bannedUsers: true,
         },
       });
 
       if (!room) {
         throw new NotFoundException('Public room not found');
+      }
+
+      const isBanned = room.bannedUsers.some((user) => user.id === userID);
+
+      if (isBanned) {
+        throw new Error('You are banned from the channel');
       }
 
       const isMatch = await argon.verify(room.password, password);
