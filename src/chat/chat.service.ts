@@ -113,10 +113,14 @@ export class ChatService {
                 id: targetUser,
               },
             },
+            users: {
+              disconnect: {
+                id: targetUser,
+              },
+            },
           },
         });
 
-        this.handleLeaveRoom(room.uid, targetUser);
         return updatedRoom;
       } else {
         throw new UnauthorizedException('Only admin / owner can mute');
@@ -157,7 +161,20 @@ export class ChatService {
           throw new Error("Admins can't kick owner");
         }
 
-        this.handleLeaveRoom(room.uid, targetUser);
+        const updatedRoom = await this.prisma.room.update({
+          where: {
+            uid: conversationdId,
+          },
+          data: {
+            users: {
+              disconnect: {
+                id: targetUser,
+              },
+            },
+          },
+        });
+
+        return updatedRoom;
       }
     } catch (error) {
       console.log(error);
@@ -910,9 +927,7 @@ export class ChatService {
 
       const isBlocked = await this.isBlocked(userID, otherUser.id);
 
-      console.log(isBlocked);
-
-      if (isBlocked) {
+      if (isBlocked && !room.isChannel) {
         throw new Error(
           'You are blocked from sending messages in this conversation.',
         );

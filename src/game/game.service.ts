@@ -31,10 +31,7 @@ export class GameService {
 
   constructor(
     private prisma: PrismaService,
-    @Inject(forwardRef(() => CoreGateway))
-    private readonly globalGatway: CoreGateway,
     private userService: UsersService,
-    @Inject('PUSHER') private readonly pusher: Pusher,
   ) {
     this.gameManager = new GameManager(this.server, this);
   }

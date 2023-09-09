@@ -6,21 +6,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserInfo } from './utils/types';
 import { GameService } from './game.service';
 import { v4 as uuidv4 } from 'uuid';
 import { GameManager, GameTable } from './utils/game-table.model';
 
 enum PlayOption {
-  PlayWithBot = 'playWithBot',
   PlayWithRandom = 'playWithRandom',
   privateGame = 'privateGame',
 }
-
-// enum Direction {
-//   Up = -1,
-//   Down = 1,
-// }
 
 @WebSocketGateway({ namespace: 'game' })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -79,17 +72,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { id, username, playOption, roomName } = data;
 
     switch (playOption) {
-      case PlayOption.PlayWithBot:
-        // this.gameService.addUserToQueue(
-        //   id,
-        //   username,
-        //   client.id,
-        //   playOption,
-        //   this.server,
-        // );
-        console.log('Joining queue to play with a bot');
-        break;
-
       case PlayOption.PlayWithRandom:
         const availableRooms = this.queueRooms.filter(
           (room) => !this.isRoomFull(room),
@@ -229,7 +211,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (gameManagerEntry) {
       const { gameManager } = gameManagerEntry;
 
-      // console.log(gameManager);
       gameManager.handlePlayerDisconnect(disconnectedPlayerId);
       this.gamesManagers.delete(gameManagerEntry);
     }
