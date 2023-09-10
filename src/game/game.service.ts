@@ -114,50 +114,50 @@ export class GameService {
     gameManager.startGame(players, server, player1Id, roomName);
   }
 
-  // addUserToQueue(
-  //   id: number,
-  //   nickname: string,
-  //   socketId: string,
-  //   playOption: PlayOption,
-  //   server: Server,
-  // ) {
-  //   if (this.userIdSet.has(id)) {
-  //     // User is already in the queue, handle accordingly
-  //     return;
-  //   }
+  addUserToQueue(
+    id: number,
+    nickname: string,
+    socketId: string,
+    playOption: PlayOption,
+    server: Server,
+  ) {
+    if (this.userIdSet.has(id)) {
+      // User is already in the queue, handle accordingly
+      return;
+    }
 
-  //   const userInfo: any = { id, nickname, socketId };
-  //   this.usersQueue.push(userInfo);
-  //   this.userIdSet.add(id);
+    const userInfo: any = { id, nickname, socketId };
+    this.usersQueue.push(userInfo);
+    this.userIdSet.add(id);
 
-  //   if (playOption === PlayOption.PlayWithBot) {
-  //     // Handle Play with Bot option here, like emitting a 'queuedForBot' event
-  //     server.to('hello').emit('queuedForBot', {
-  //       message: 'Waiting to play with a bot...',
-  //     });
+    if (playOption === PlayOption.PlayWithBot) {
+      // Handle Play with Bot option here, like emitting a 'queuedForBot' event
+      server.to('hello').emit('queuedForBot', {
+        message: 'Waiting to play with a bot...',
+      });
 
-  //     // Set a timeout to remove the user from queue after a certain time
-  //     setTimeout(() => {
-  //       this.removeFromQueue(id);
-  //       server.to('hello').emit('gameStarted');
-  //     }, 2000);
-  //   } else if (playOption === PlayOption.PlayWithRandom) {
-  //     // Handle Play with Random option here, wait for more players or start game
-  //     if (this.usersQueue.length >= 2) {
-  //       server.to('hello').emit('inQueue');
-  //       setTimeout(() => {
-  //         this.startGame(server, id);
-  //       }, 2000);
-  //     } else {
-  //       server.to('hello').emit('inQueue', {
-  //         message: 'Waiting for another player to join...',
-  //       });
-  //     }
-  //   } else if (playOption === PlayOption.InviteFriend) {
-  //     // Handle Invite Friend option here, maybe emit an 'invitingFriend' event
-  //     // ... handle inviting a friend logic
-  //   }
-  // }
+      // Set a timeout to remove the user from queue after a certain time
+      setTimeout(() => {
+        this.removeFromQueue(id);
+        server.to('hello').emit('gameStarted');
+      }, 2000);
+    } else if (playOption === PlayOption.PlayWithRandom) {
+      // Handle Play with Random option here, wait for more players or start game
+      if (this.usersQueue.length >= 2) {
+        server.to('hello').emit('inQueue');
+        setTimeout(() => {
+          this.startGame(server, id);
+        }, 2000);
+      } else {
+        server.to('hello').emit('inQueue', {
+          message: 'Waiting for another player to join...',
+        });
+      }
+    } else if (playOption === PlayOption.InviteFriend) {
+      // Handle Invite Friend option here, maybe emit an 'invitingFriend' event
+      // ... handle inviting a friend logic
+    }
+  }
 
   private startGame(server: Server, playerId: number) {
     // this.gameManager.startGame(this.usersQueue, server, playerId); // Use GameManager to start the game

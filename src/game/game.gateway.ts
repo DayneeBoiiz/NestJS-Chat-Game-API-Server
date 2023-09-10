@@ -139,6 +139,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (roomName) {
           const waitingPlayer = this.privateGameQueue.get(roomName);
 
+          if (waitingPlayer?.id === id) {
+            return;
+          }
+
           if (waitingPlayer) {
             const player1 = waitingPlayer;
             const player2 = {
@@ -198,7 +202,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.handlePlayerDisconnect(client.id);
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(`Client disconnected from GameGateway: ${client.id}`);
   }
 
   handlePlayerDisconnect(disconnectedPlayerId: string) {

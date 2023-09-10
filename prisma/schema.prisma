@@ -30,6 +30,8 @@ model User {
   FirstLogin Boolean? @default(true)
 
   avatarUrl String? @default("default_avatar.png")
+  isChanged Boolean @default(false)
+
   state     String  @default("offline")
   provider  String?
 

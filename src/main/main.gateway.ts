@@ -12,7 +12,7 @@ import { UsersService } from 'src/users/users.service';
 @WebSocketGateway({
   namespace: 'main',
   cors: {
-    origin: 'http://10.30.153.186:3000',
+    origin: 'http://localhost:3000',
     credentials: true,
   },
 })

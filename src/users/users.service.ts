@@ -380,6 +380,7 @@ export class UsersService {
               state: true,
               friendStatus: true,
               provider: true,
+              isChanged: true,
             },
           },
         },
@@ -400,6 +401,7 @@ export class UsersService {
         state: friend.sentBy.state,
         friendStatus: friend.sentBy.friendStatus,
         provider: friend.sentBy.provider,
+        isChanged: friend.sentBy.isChanged,
       };
 
       this.globalGatway.server.emit('friend:new', payload);
@@ -500,6 +502,7 @@ export class UsersService {
         avatarUrl: true,
         friendStatus: true,
         provider: true,
+        isChanged: true,
         sentFriendRequests: {
           where: {
             recipientID: userID,
@@ -564,7 +567,6 @@ export class UsersService {
 
   async handleUnblockUser(userName: string, blockedUserName: string) {
     try {
-
       const blockedUser = await this.prisma.user.findUnique({
         where: {
           nickname: blockedUserName,
@@ -798,14 +800,17 @@ export class UsersService {
         id: user.id,
       },
     });
-    //delete the old avatar if there is a one other than the default
-    if (find_user.avatarUrl != 'default_avatar.png') {
+
+    if (
+      find_user.avatarUrl != 'default_avatar.png' &&
+      user.provider !== 'intra'
+    ) {
       fs.unlinkSync('src/avatars/uploads/' + find_user.avatarUrl);
     }
-    //give the new avatar a name (username + id + .ext)
-    const file_ext = avatar.originalname.split('.')[1]; //the ext of the new avatar file
+
+    const file_ext = avatar.originalname.split('.')[1];
     const filename = `${find_user.nickname}${find_user.id}.${file_ext}`;
-    //rename the new avatar file
+
     fs.renameSync(avatar.path, 'src/avatars/uploads/' + filename);
     await this.prisma.user.update({
       where: {

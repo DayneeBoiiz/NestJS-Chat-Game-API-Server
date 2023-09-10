@@ -24,6 +24,8 @@ import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { Token } from 'src/auth/decorator/token.decorator';
 import { JwtBlacklistGuard } from 'src/auth/guard/jwt-blacklist.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as sharp from 'sharp';
+import * as fs from 'fs';
 
 @UseGuards(JwtBlacklistGuard)
 @UseGuards(JwtGuard)
@@ -54,18 +56,36 @@ export class UsersController {
       },
     }),
   )
-  updateAvatar(
+  async updateAvatar(
     @UploadedFile() avatar: Express.Multer.File,
     @GetUser() user: User,
   ) {
-    this.userService.updateAvatar(avatar, user);
+    try {
+      const check = await sharp(avatar.path)
+        .resize({ width: 200, height: 200 })
+        .toBuffer();
+
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          isChanged: true,
+        },
+      });
+
+      this.userService.updateAvatar(avatar, user);
+    } catch (error) {
+      console.log(error);
+      return { error: error.message };
+    }
   }
 
   @Get('my-avatar')
   @UseGuards(JwtGuard)
   getAvatar(@GetUser() user: User, @Res() res: Response) {
     try {
-      if (user.provider === 'intra') {
+      if (user.provider === 'intra' && !user.isChanged) {
         return res.json(user.avatarUrl);
       } else {
         return this.userService.getAvatar(user, res);
@@ -85,7 +105,7 @@ export class UsersController {
           id: userID,
         },
       });
-      if (user.provider === 'intra') {
+      if (user.provider === 'intra' && !user.isChanged) {
         return res.json(user.avatarUrl);
       } else {
         return await this.userService.getPublicAvatar(user, res);
@@ -99,6 +119,7 @@ export class UsersController {
   @Get(':username/other')
   async handleGetOtherUser(@Param('username') username: string) {
     try {
+      // console.log(username);
       return await this.userService.getOtherUser(username);
     } catch (error) {
       console.log(error);
@@ -136,8 +157,12 @@ export class UsersController {
 
   @Get('me')
   getMe(@GetUser() user: User) {
-    delete user.TwofaAutSecret;
-    return user;
+    try {
+      delete user.TwofaAutSecret;
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Post(':username/send-friend-request')
@@ -187,7 +212,11 @@ export class UsersController {
     @Param('username') userName: string,
     @GetUser() user: User,
   ) {
-    return await this.userService.handleRemoveFriend(userName, user.id);
+    try {
+      return await this.userService.handleRemoveFriend(userName, user.id);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Post(':username/reject')
@@ -279,6 +308,10 @@ export class UsersController {
 
   @Get('logout')
   async logout(@GetUser() user: User, @Token() token) {
-    await this.userService.addToBlockedTokens(token);
+    try {
+      await this.userService.addToBlockedTokens(token);
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
