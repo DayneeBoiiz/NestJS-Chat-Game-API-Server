@@ -214,6 +214,9 @@ export class GameService {
           player1: true,
           player2: true,
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
 
       const winCount = userMatches.reduce((count, match) => {

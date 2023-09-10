@@ -90,11 +90,6 @@ const checkCollision = (
         winner: gameTable.player1.nickname,
       });
     }
-    // console.log('Player two score ', gameTable.player2.score);
-    // server.to(roomName).emit('playerScored', {
-    //   player2Score: gameTable.player2.score,
-    //   player1Score: gameTable.player1.score,
-    // });
     resetBall(ball, true);
   }
 
@@ -115,11 +110,6 @@ const checkCollision = (
         winner: gameTable.player1.nickname,
       });
     }
-    // console.log('Player one score ', gameTable.player1.score);
-    // server.to(roomName).emit('playerScored', {
-    //   player2Score: gameTable.player2.score,
-    //   player1Score: gameTable.player1.score,
-    // });
     resetBall(ball, false);
   }
 };

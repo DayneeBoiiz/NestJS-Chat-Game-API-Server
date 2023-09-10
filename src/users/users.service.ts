@@ -634,10 +634,19 @@ export class UsersService {
               receivedBy: {
                 select: {
                   id: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  email: true,
                   nickname: true,
-                  state: true,
+                  hash: true,
+                  TwofaAutSecret: true,
+                  TwofaAutEnabled: true,
+                  FirstLogin: true,
                   avatarUrl: true,
+                  state: true,
                   provider: true,
+                  friendStatus: true,
+                  isChanged: true,
                 },
               },
             },
@@ -782,9 +791,20 @@ export class UsersService {
           include: {
             sender: {
               select: {
+                id: true,
+                createdAt: true,
+                updatedAt: true,
+                email: true,
                 nickname: true,
+                hash: true,
+                TwofaAutSecret: true,
+                TwofaAutEnabled: true,
+                FirstLogin: true,
                 avatarUrl: true,
+                state: true,
                 provider: true,
+                friendStatus: true,
+                isChanged: true,
               },
             },
           },
@@ -792,6 +812,14 @@ export class UsersService {
       },
     });
     return user?.receivedFriendRequests;
+
+    // id: number;
+    // sender: User;
+    // createdAt: string;
+    // updatedAt: string;
+    // senderID: number;
+    // recipientId: number;
+    // friendRequestStatus: string;
   }
 
   async updateAvatar(avatar: Express.Multer.File, user: User) {

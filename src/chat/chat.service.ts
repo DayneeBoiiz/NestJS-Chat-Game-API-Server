@@ -894,6 +894,8 @@ export class ChatService {
       },
     });
 
+    // console.log(user);
+
     if (!user) {
       throw new NotFoundException('User not found.');
     }
@@ -1380,15 +1382,40 @@ export class ChatService {
               sender: {
                 select: {
                   id: true,
-                  avatarUrl: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  email: true,
                   nickname: true,
+                  hash: true,
+                  TwofaAutSecret: true,
+                  TwofaAutEnabled: true,
+                  FirstLogin: true,
+                  avatarUrl: true,
+                  state: true,
                   provider: true,
+                  friendStatus: true,
+                  isChanged: true,
                 },
               },
             },
           },
         },
       });
+
+      // id: number;
+      // createdAt: string;
+      // updatedAt: string;
+      // email: string;
+      // nickname: string;
+      // hash: string;
+      // TwofaAutSecret: null | string;
+      // TwofaAutEnabled: boolean;
+      // FirstLogin: boolean;
+      // avatarUrl: string;
+      // state: string;
+      // provider: string;
+      // friendStatus: string;
+      // isChanged: boolean;
 
       const isMember = await this.isUserInRoom(userID, room.id);
 
