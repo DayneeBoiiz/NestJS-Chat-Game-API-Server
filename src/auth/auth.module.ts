@@ -6,11 +6,11 @@ import { JwtStrategy } from './strategy';
 import { Strategy_42 } from './strategy/42.strategy';
 import { SessionSerializer } from './strategy/serilzer';
 import { UsersService } from 'src/users/users.service';
-import { CoreModule } from 'src/core/core.module';
+import { MainModule } from 'src/main/main.module';
 // import { GlobalModule } from 'src/global/global.module';
 
 @Module({
-  imports: [JwtModule.register({}), CoreModule],
+  imports: [JwtModule.register({}), MainModule],
   controllers: [AuthController],
   providers: [
     AuthService,

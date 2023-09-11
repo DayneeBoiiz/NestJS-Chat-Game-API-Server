@@ -29,7 +29,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client connected to MainGatway: ${client.id}`);
     const user = client.handshake.query;
     const userId = user.id;
-    this.userService.addSocket(userId as string, client);
+    await this.userService.addSocket(userId as string, client);
   }
 
   async handleDisconnect(client: Socket) {

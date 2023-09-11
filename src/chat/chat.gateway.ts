@@ -30,8 +30,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(client: Socket, data: { conversationId: string }) {
+  handleJoinRoom(client: Socket, data: any) {
     const { conversationId } = data;
+
     client.join(conversationId);
   }
 

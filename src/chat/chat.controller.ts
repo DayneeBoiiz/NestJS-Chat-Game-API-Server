@@ -78,7 +78,7 @@ export class ChatController {
     try {
       if (isGroup) {
         return await this.chatService.joinPublicRoom(conversationId, user.id);
-      } else if (isPrivate) {
+      } else if (isPrivate){
         return await this.chatService.joinPrivateRoom(user.id, roomKey);
       } else if (isProtected) {
         return await this.chatService.joinProtectedRoom(

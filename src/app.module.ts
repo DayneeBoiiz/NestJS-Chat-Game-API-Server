@@ -11,13 +11,8 @@ import { ChatService } from './chat/chat.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat/chat.controller';
 import { GameModule } from './game/game.module';
-// import { GlobalGateway } from './global/global.gateway';
 import { UsersService } from './users/users.service';
-// import { GlobalModule } from './global/global.module';
-// import { GlobalService } from './global/global.service';
 import { PusherModule } from './pusher/pusher.module';
-import { CoreGateway } from './core/core.gateway';
-import { CoreModule } from './core/core.module';
 import { MainGateway } from './main/main.gateway';
 
 @Module({
@@ -31,7 +26,6 @@ import { MainGateway } from './main/main.gateway';
     GameModule,
     UsersModule,
     PusherModule,
-    CoreModule,
   ],
   controllers: [TwoFactorAuthenticationController, ChatController],
   providers: [
@@ -40,7 +34,6 @@ import { MainGateway } from './main/main.gateway';
     ChatGateway,
     ChatService,
     UsersService,
-    CoreGateway,
     MainGateway,
   ],
 })

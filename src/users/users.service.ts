@@ -16,8 +16,8 @@ import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { NewPassDto, UsernameDto } from 'src/auth/dto';
 import { Socket } from 'socket.io';
-import { CoreGateway } from 'src/core/core.gateway';
 import { v4 as uuidv4 } from 'uuid';
+import { MainGateway } from 'src/main/main.gateway';
 
 @Injectable()
 export class UsersService {
@@ -25,8 +25,8 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
-    @Inject(forwardRef(() => CoreGateway))
-    private readonly globalGatway: CoreGateway,
+    @Inject(forwardRef(() => MainGateway))
+    private readonly globalGatway: MainGateway,
   ) {
     this.scheduleDataCleanup();
   }
@@ -930,15 +930,25 @@ export class UsersService {
     }
   }
 
-  addSocket(userId: string, client: Socket) {
+  async addSocket(userId: string, client: Socket) {
     const userID = parseInt(userId);
 
     if (!this.userSocketsMap.has(userID)) {
       this.userSocketsMap.set(userID, []);
     }
-    this.userSocketsMap.get(userID).push(client);
 
-    this.onlineState(userID);
+    const userSockets = this.userSocketsMap.get(userID);
+    const socketExists = userSockets.some(
+      (existingSocket) => existingSocket.id === client.id,
+    );
+
+    if (!socketExists) {
+      userSockets.push(client);
+      // this.onlineState(userID);
+    }
+    // console.log(this.userSocketsMap.get(userID));
+
+    // this.onlineState(userID);
   }
 
   removeSocket(userId: string, client: Socket) {
@@ -951,9 +961,9 @@ export class UsersService {
         sockets.splice(socketIndex, 1);
       }
 
-      if (sockets.length === 0) {
-        this.offlineState(userID);
-      }
+      // if (sockets.length === 0) {
+      //   this.offlineState(userID);
+      // }
     }
   }
 

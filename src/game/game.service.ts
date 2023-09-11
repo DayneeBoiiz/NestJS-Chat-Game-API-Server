@@ -2,18 +2,8 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserInfo } from './utils/types';
 import { Server, Socket } from 'socket.io';
-import {
-  Ball,
-  GameManager,
-  GameTable,
-  Paddle,
-  Player,
-} from './utils/game-table.model';
-import { moveBall } from './utils/game_functions';
+import { GameManager, Player } from './utils/game-table.model';
 import { Result } from 'src/auth/utils/types';
-// import { GlobalGateway } from 'src/global/global.gateway';
-import Pusher from 'pusher';
-import { CoreGateway } from 'src/core/core.gateway';
 import { UsersService } from 'src/users/users.service';
 
 enum PlayOption {

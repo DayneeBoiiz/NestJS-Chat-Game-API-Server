@@ -7,7 +7,7 @@ import { GameGateway } from './game.gateway';
 // import { GlobalGateway } from 'src/global/global.gateway';
 import { UsersService } from 'src/users/users.service';
 import { PusherModule } from 'src/pusher/pusher.module';
-import { CoreGateway } from 'src/core/core.gateway';
+import { MainGateway } from 'src/main/main.gateway';
 
 @Module({
   imports: [
@@ -20,8 +20,8 @@ import { CoreGateway } from 'src/core/core.gateway';
     GameService,
     JwtBlacklistGuard,
     GameGateway,
-    CoreGateway,
     UsersService,
+    MainGateway,
   ],
   controllers: [GameController],
 })

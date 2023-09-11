@@ -413,6 +413,19 @@ export class ChatService {
         }
       }
 
+      await this.prisma.room.update({
+        where: {
+          id: room.id,
+        },
+        data: {
+          users: {
+            disconnect: {
+              id: userID,
+            },
+          },
+        },
+      });
+
       return room;
     } catch (error) {
       throw new Error(error);
@@ -894,13 +907,9 @@ export class ChatService {
       },
     });
 
-    // console.log(user);
-
     if (!user) {
       throw new NotFoundException('User not found.');
     }
-
-    // const userBlockedBy = user.blockedUsers;
 
     return user.blockedUsers.length > 0 || user.usersBlockedBy.length > 0;
   }
@@ -925,14 +934,16 @@ export class ChatService {
         throw new Error('Room not found');
       }
 
-      const otherUser = room.users.find((user) => user.id !== userID);
+      if (!room.isChannel) {
+        const otherUser = room.users.find((user) => user.id !== userID);
 
-      const isBlocked = await this.isBlocked(userID, otherUser.id);
+        const isBlocked = await this.isBlocked(userID, otherUser.id);
 
-      if (isBlocked && !room.isChannel) {
-        throw new Error(
-          'You are blocked from sending messages in this conversation.',
-        );
+        if (isBlocked && !room.isChannel) {
+          throw new Error(
+            'You are blocked from sending messages in this conversation.',
+          );
+        }
       }
 
       const isMuted = room.mutedUsers.some((user) => user.id === userID);
@@ -1280,7 +1291,6 @@ export class ChatService {
       const room = await this.prisma.room.findUnique({
         where: {
           uid: conversationdID,
-          isProtected: true,
         },
         include: {
           users: true,
