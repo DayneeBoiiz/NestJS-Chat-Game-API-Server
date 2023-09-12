@@ -1015,8 +1015,10 @@ export class ChatService {
         seen: newMessage.seen,
       };
 
+    // the sender -> blocklist from bothsides
+    // create an array of socketIds 
       this.chatGatway.server
-        .to(conversationdId)
+        .to(conversationdId).except([])
         .emit('message:new', eventPayload);
 
       this.globalGatway.server.emit('conversation:update', {

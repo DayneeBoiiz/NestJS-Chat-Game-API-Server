@@ -314,4 +314,15 @@ export class UsersController {
       console.log(error);
     }
   }
+
+  @Get(':otherid/other-games')
+  async handleGetOtherGames(@Param('otherid') userId: string) {
+    try {
+      const userID = parseInt(userId);
+
+      return await this.userService.handleGetOtherGames(userID);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

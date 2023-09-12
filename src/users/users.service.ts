@@ -1038,4 +1038,37 @@ export class UsersService {
       console.log(error);
     }
   }
+
+  async handleGetOtherGames(userID: number) {
+    try {
+      const userMatches = await this.prisma.match.findMany({
+        where: {
+          OR: [{ player1Id: userID }, { player2Id: userID }],
+        },
+        include: {
+          winner: true,
+        },
+      });
+
+      const winCount = userMatches.reduce((count, match) => {
+        if (match.winnerId === userID) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+
+      const loseCount = userMatches.reduce((count, match) => {
+        if (match.winnerId !== userID) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+
+      const matchsTotal = userMatches.length;
+
+      return { matches: matchsTotal, wins: winCount, loses: loseCount };
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

@@ -23,6 +23,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private chatService: ChatService) {}
 
   async handleConnection(client: Socket, ...args: any[]) {
+    // map users_id set clientSocketsIds
+    // on disconnect -> socket remove from map
+    // client.join(client.id);
     console.log(`Client connected To The Chat: ${client.id}`);
   }
   async handleDisconnect(client: Socket) {
