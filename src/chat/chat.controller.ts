@@ -43,7 +43,7 @@ export class ChatController {
         return this.chatService.handleCreateRoom(userID, user.id);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return error;
     }
   }
@@ -55,7 +55,7 @@ export class ChatController {
     try {
       return await this.chatService.handleLeaveRoom(conversationId, user.id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error: error.message };
     }
   }
@@ -78,7 +78,7 @@ export class ChatController {
     try {
       if (isGroup) {
         return await this.chatService.joinPublicRoom(conversationId, user.id);
-      } else if (isPrivate){
+      } else if (isPrivate) {
         return await this.chatService.joinPrivateRoom(user.id, roomKey);
       } else if (isProtected) {
         return await this.chatService.joinProtectedRoom(
@@ -98,7 +98,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetMyRooms(user.id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -113,7 +113,7 @@ export class ChatController {
         // return await this.chatService.getPrivateRooms();
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -125,7 +125,7 @@ export class ChatController {
     try {
       return await this.chatService.getOtherUser(conversationID, user);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -134,7 +134,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetMyChats(user.id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -143,7 +143,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetRoomMessages(roomId);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -157,7 +157,7 @@ export class ChatController {
 
       return await this.chatService.handleSendMessage(user.id, RoomId, message);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -169,7 +169,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetChannelDetails(user.id, roomId);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -185,7 +185,7 @@ export class ChatController {
       const { conversationId, targetUser } = data;
       await this.chatService.handleBan(user.id, conversationId, targetUser);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -195,7 +195,7 @@ export class ChatController {
       const { conversationId, targetUser } = data;
       await this.chatService.handleKick(user.id, conversationId, targetUser);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -210,7 +210,7 @@ export class ChatController {
         updatedUser,
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -225,7 +225,7 @@ export class ChatController {
         updatedUser,
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -239,7 +239,7 @@ export class ChatController {
         password,
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 

@@ -26,14 +26,14 @@ import { UsersService } from 'src/users/users.service';
 //   server: Server;
 
 //   async handleConnection(client: Socket, ...args: any[]) {
-//     console.log(`Client connected: ${client.id}`);
+//     // console.log(`Client connected: ${client.id}`);
 //     const user = client.handshake.query;
 //     const userId = user.id;
 //     this.userService.addSocket(userId as string, client);
 //   }
 
 //   async handleDisconnect(client: Socket) {
-//     console.log(`Client disconnected: ${client.id}`);
+//     // console.log(`Client disconnected: ${client.id}`);
 //     const user = client.handshake.query;
 //     const userId = user.id;
 //     this.userService.removeSocket(userId as string, client);
@@ -45,7 +45,7 @@ import { UsersService } from 'src/users/users.service';
 //     const { recipientId, sender } = data;
 //     await this.userService.sendInvite(recipientId, sender);
 //   } catch (error) {
-//     console.log(error);
+//     // console.log(error);
 //   }
 // }
 // }

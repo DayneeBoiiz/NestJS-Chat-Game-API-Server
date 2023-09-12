@@ -39,7 +39,7 @@ export class GameService {
   //   const userInfo: UserInfo = { id, username, socket };
   //   this.usersQueue.push(userInfo);
   //   this.userIdSet.add(id);
-  //   console.log('InQueue');
+  //   // console.log('InQueue');
 
   //   if (this.usersQueue.length >= 2) {
   //     // Two users are in the queue, emit 'gameStarted' event
@@ -57,7 +57,7 @@ export class GameService {
   //       message: 'Waiting for another player to join...',
   //       data: socket.data,
   //     });
-  //     console.log(this.usersQueue);
+  //     // console.log(this.usersQueue);
   //   }
   // }
 
@@ -80,9 +80,9 @@ export class GameService {
     const player1 = new Player(player1Id, player1Username, player1SocketId);
     const player2 = new Player(player2Id, player2Username, player2Socketid);
 
-    // console.log(player1);
-    // console.log(player2);
-    // console.log(roomName);
+    // // console.log(player1);
+    // // console.log(player2);
+    // // console.log(roomName);
 
     const players = [player1, player2];
     const gameManager = new GameManager(server, this);
@@ -94,7 +94,7 @@ export class GameService {
       player2SocketId: player2.socketId,
     });
 
-    // console.log(gameManager);
+    // // console.log(gameManager);
 
     // server.to(roomName).emit('gameStarted');
 
@@ -158,7 +158,7 @@ export class GameService {
     if (index !== -1) {
       this.usersQueue.splice(index, 1);
       this.userIdSet.delete(id);
-      console.log('User removed from queue:', id);
+      // console.log('User removed from queue:', id);
     }
   }
 
@@ -184,7 +184,7 @@ export class GameService {
 
       return match;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -218,7 +218,7 @@ export class GameService {
 
       return { matches: userMatches, winCount };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -239,7 +239,7 @@ export class GameService {
 
       return sortedLeaderboard;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 }

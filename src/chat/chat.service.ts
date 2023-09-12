@@ -72,7 +72,7 @@ export class ChatService {
         throw new UnauthorizedException('Only admin / owner can mute');
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -126,7 +126,7 @@ export class ChatService {
         throw new UnauthorizedException('Only admin / owner can mute');
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -177,7 +177,7 @@ export class ChatService {
         return updatedRoom;
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -225,9 +225,9 @@ export class ChatService {
         );
       }
 
-      console.log(`user ${updatedUser} is now Admin`);
+      // console.log(`user ${updatedUser} is now Admin`);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -275,9 +275,9 @@ export class ChatService {
         );
       }
 
-      console.log(`user ${updatedUser} is now normal User`);
+      // console.log(`user ${updatedUser} is now normal User`);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -329,7 +329,7 @@ export class ChatService {
         );
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -450,9 +450,9 @@ export class ChatService {
   //     if (!room) return;
 
   //     const isAdmin = room.admins.some((admin) => admin.id === userID);
-  //     // console.log('isAdmin ==> ', isAdmin);
+  //     // // console.log('isAdmin ==> ', isAdmin);
   //     const isOwner = room.owner.id === userID;
-  //     // console.log('isOwner ==> ', isOwner);
+  //     // // console.log('isOwner ==> ', isOwner);
 
   //     if (isAdmin || isOwner) {
   //       let newOwnerId = null;
@@ -464,7 +464,7 @@ export class ChatService {
   //         );
   //         const nextOwnerIndex = (currentOwnerIndex + 1) % participants.length;
   //         newOwnerId = participants[nextOwnerIndex].id;
-  //         // console.log('newOwnerId ==> ', newOwnerId);
+  //         // // console.log('newOwnerId ==> ', newOwnerId);
   //       }
 
   //       await this.prisma.room.update({
@@ -498,7 +498,7 @@ export class ChatService {
   //       }
   //     }
   //   } catch (error) {
-  //     console.log(error);
+  //     // console.log(error);
   //   }
   // }
 
@@ -517,20 +517,20 @@ export class ChatService {
 
   //     server.to(`room:${roomID}`).emit('roomDeleted');
   //   } catch (error) {
-  //     console.log(error);
+  //     // console.log(error);
   //   }
   // }
 
   // async extractUserIdFromHeader(@Req() req: Request) {
   //   const token = req.headers.authorization;
-  //   // console.log(token);
+  //   // // console.log(token);
 
   //   try {
   //     const decoded = this.jwtService.verify(token.replace('Bearer ', ''));
   //     const userId = decoded.sub;
   //     return userId;
   //   } catch (error) {
-  //     console.log(error);
+  //     // console.log(error);
   //   }
   // }
 
@@ -542,7 +542,7 @@ export class ChatService {
   //     const userId = decoded.sub;
   //     return userId;
   //   } catch (error) {
-  //     console.log(error);
+  //     // console.log(error);
   //   }
   // }
 
@@ -570,7 +570,7 @@ export class ChatService {
   //     client.join(`room:${roomID}`);
   //     client.emit(`roomJoined`);
   //   } else {
-  //     console.log('Room not Found');
+  //     // console.log('Room not Found');
   //   }
   // }
 
@@ -859,7 +859,7 @@ export class ChatService {
         return newRoom;
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -1015,10 +1015,11 @@ export class ChatService {
         seen: newMessage.seen,
       };
 
-    // the sender -> blocklist from bothsides
-    // create an array of socketIds 
+      // the sender -> blocklist from bothsides
+      // create an array of socketIds
       this.chatGatway.server
-        .to(conversationdId).except([])
+        .to(conversationdId)
+        .except([])
         .emit('message:new', eventPayload);
 
       this.globalGatway.server.emit('conversation:update', {

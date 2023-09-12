@@ -26,10 +26,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // map users_id set clientSocketsIds
     // on disconnect -> socket remove from map
     // client.join(client.id);
-    console.log(`Client connected To The Chat: ${client.id}`);
+    // console.log(`Client connected To The Chat: ${client.id}`);
   }
   async handleDisconnect(client: Socket) {
-    console.log(`Client disconnected from The Chat: ${client.id}`);
+    // console.log(`Client disconnected from The Chat: ${client.id}`);
   }
 
   @SubscribeMessage('joinRoom')
@@ -79,7 +79,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //   client: Socket,
   //   data: { recieverID: string; message: string },
   // ) {
-  //   console.log(data.recieverID);
-  //   console.log(data.message);
+  //   // console.log(data.recieverID);
+  //   // console.log(data.message);
   // }
 }

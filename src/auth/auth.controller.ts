@@ -21,7 +21,7 @@ export class AuthController {
     try {
       return this.authService.register(dto);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -30,7 +30,7 @@ export class AuthController {
     try {
       return this.authService.login(dto);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error: error.message };
     }
   }
@@ -44,11 +44,11 @@ export class AuthController {
   handle42Redirect(@Req() req: Request, @Res() res: Response) {
     try {
       const token = req.user;
-      // console.log(token);
+      // // console.log(token);
       res.cookie('token', token, { httpOnly: false });
       res.redirect('/auth/success');
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 

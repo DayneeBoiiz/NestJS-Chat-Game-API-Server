@@ -104,7 +104,7 @@ export class UsersService {
       const userID = decoded.sub;
       return userID;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -148,8 +148,8 @@ export class UsersService {
         throw new Error('Friendship not found');
       }
 
-      // console.log(firstFriendship);
-      // console.log(secondFriendship);
+      // // console.log(firstFriendship);
+      // // console.log(secondFriendship);
 
       await this.prisma.friend.delete({
         where: {
@@ -167,7 +167,7 @@ export class UsersService {
 
       return { message: 'Friend removed' };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       // throw new Error('Failed to remove friend');
     }
   }
@@ -193,7 +193,7 @@ export class UsersService {
         throw new Error('Friend request not found');
       }
 
-      console.log(friendRequest.recipient.nickname);
+      // console.log(friendRequest.recipient.nickname);
 
       // Check if the sender is actually the recipient of the friend request
       if (friendRequest.recipient.nickname === senderName) {
@@ -288,15 +288,15 @@ export class UsersService {
     //   });
     //   return { message: 'Friend request cancelled' };
     // } catch (error) {
-    //   console.log(error);
+    //   // console.log(error);
     //   throw new Error('Failed to cancel friend request');
     // }
   }
 
   async getUsersId(senderUserName: string, recieverUserName: string) {
     try {
-      // console.log(senderUserName);
-      // console.log(recieverUserName);
+      // // console.log(senderUserName);
+      // // console.log(recieverUserName);
       const sender = await this.prisma.user.findUnique({
         where: {
           nickname: senderUserName,
@@ -315,7 +315,7 @@ export class UsersService {
 
       return { senderID: sender.id, receiverID: reciever.id };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -485,7 +485,7 @@ export class UsersService {
 
       return { message: 'Friend request sent' };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       throw new Error('Failed to send friend request');
     }
   }
@@ -560,7 +560,7 @@ export class UsersService {
       publicProfile.friendStatus = 'friend';
     }
 
-    // console.log(publicProfile.receivedFriendRequests);
+    // // console.log(publicProfile.receivedFriendRequests);
 
     return publicProfile;
   }
@@ -595,7 +595,7 @@ export class UsersService {
 
       return unblockUser;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -618,7 +618,7 @@ export class UsersService {
       const jsonData = JSON.stringify(blockedUsersData);
       return jsonData;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -662,7 +662,7 @@ export class UsersService {
 
       return JSON.stringify(friendList);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       throw new Error('Failed to get friend list');
     }
   }
@@ -776,7 +776,7 @@ export class UsersService {
       });
       return blockedUserRelation;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       throw new Error('Failed to block user');
     }
   }
@@ -873,7 +873,7 @@ export class UsersService {
       },
     });
 
-    // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
+    // // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
 
     //if the user has the default avatar
     if (find_user.avatarUrl === 'default_avatar.png') {
@@ -882,7 +882,7 @@ export class UsersService {
         this.config.get('DEFAULT_AVATAR_PATH'),
         user.avatarUrl,
       );
-      // console.log(absolutePath);
+      // // console.log(absolutePath);
       return res.sendFile(absolutePath);
     }
     //if the user has a custom avatar
@@ -892,14 +892,14 @@ export class UsersService {
         this.config.get('AVATAR_PATH'),
         user.avatarUrl,
       );
-      // console.log(absolutePath);
+      // // console.log(absolutePath);
       return res.sendFile(absolutePath);
     }
   }
 
   async getPublicAvatar(user: User, res: Response) {
     try {
-      // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
+      // // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
 
       if (!user) {
         throw new NotFoundException('user not found');
@@ -912,7 +912,7 @@ export class UsersService {
           this.config.get('DEFAULT_AVATAR_PATH'),
           user.avatarUrl,
         );
-        // console.log(absolutePath);
+        // // console.log(absolutePath);
         return res.sendFile(absolutePath);
       }
       //if the user has a custom avatar
@@ -922,7 +922,7 @@ export class UsersService {
           this.config.get('AVATAR_PATH'),
           user.avatarUrl,
         );
-        // console.log(absolutePath);
+        // // console.log(absolutePath);
         return res.sendFile(absolutePath);
       }
     } catch (error) {
@@ -946,7 +946,7 @@ export class UsersService {
       userSockets.push(client);
       // this.onlineState(userID);
     }
-    // console.log(this.userSocketsMap.get(userID));
+    // // console.log(this.userSocketsMap.get(userID));
 
     // this.onlineState(userID);
   }
@@ -1006,7 +1006,7 @@ export class UsersService {
       if (this.userSocketsMap.has(friendID)) {
         const friendSockets = this.userSocketsMap.get(friendID);
 
-        // console.log(friendSockets[0].id);
+        // // console.log(friendSockets[0].id);
         if (friendSockets && friendSockets.length > 0) {
           friendSockets[0].emit('IncomingInvite', {
             sender: sender,
@@ -1017,7 +1017,7 @@ export class UsersService {
 
       return false;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -1035,7 +1035,7 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -1068,7 +1068,7 @@ export class UsersService {
 
       return { matches: matchsTotal, wins: winCount, loses: loseCount };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 }

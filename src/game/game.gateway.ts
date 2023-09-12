@@ -27,7 +27,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleConnection(client: Socket) {
-    console.log(`Client connected to the game Lobby: ${client.id}`);
+    // console.log(`Client connected to the game Lobby: ${client.id}`);
   }
 
   private queueRooms: string[] = [];
@@ -87,7 +87,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
           );
 
           if (playerExists) {
-            console.log('Already in Queue');
+            // console.log('Already in Queue');
           } else {
             this.playersInQueue.add({
               userId: id,
@@ -98,9 +98,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
           this.server.to(newRoom).emit('inQueue');
 
-          console.log(
-            `Joining queue to play with a random player in room ${newRoom}`,
-          );
+          // console.log(
+          //   `Joining queue to play with a random player in room ${newRoom}`,
+          // );
         } else {
           const roomToJoin = availableRooms[0];
           client.join(roomToJoin);
@@ -109,14 +109,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
           const playersArray = Array.from(this.playersInQueue);
           const player = playersArray.at(0);
 
-          // console.log(this.playersInQueue);
+          // // console.log(this.playersInQueue);
           playersArray.shift();
 
           this.playersInQueue = new Set(playersArray);
 
-          console.log(
-            `Joining queue to play with a random player in room ${roomToJoin}`,
-          );
+          // console.log(
+          // `Joining queue to play with a random player in room ${roomToJoin}`,
+          // );
 
           this.server.to(roomToJoin).emit('inQueue');
           setTimeout(() => {
@@ -180,7 +180,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         break;
 
       default:
-        console.log('Invalid play option');
+        // console.log('Invalid play option');
         break;
     }
   }
@@ -202,7 +202,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.handlePlayerDisconnect(client.id);
-    console.log(`Client disconnected from GameGateway: ${client.id}`);
+    // console.log(`Client disconnected from GameGateway: ${client.id}`);
   }
 
   handlePlayerDisconnect(disconnectedPlayerId: string) {

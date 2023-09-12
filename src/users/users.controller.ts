@@ -76,7 +76,7 @@ export class UsersController {
 
       this.userService.updateAvatar(avatar, user);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error: error.message };
     }
   }
@@ -91,7 +91,7 @@ export class UsersController {
         return this.userService.getAvatar(user, res);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -111,7 +111,7 @@ export class UsersController {
         return await this.userService.getPublicAvatar(user, res);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       res.send({ error: error.message });
     }
   }
@@ -119,10 +119,10 @@ export class UsersController {
   @Get(':username/other')
   async handleGetOtherUser(@Param('username') username: string) {
     try {
-      // console.log(username);
+      // // console.log(username);
       return await this.userService.getOtherUser(username);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -134,7 +134,7 @@ export class UsersController {
     try {
       return await this.userService.changeUsername(user, usernamedto);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error: error.message };
     }
   }
@@ -161,7 +161,7 @@ export class UsersController {
       delete user.TwofaAutSecret;
       return user;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -176,7 +176,7 @@ export class UsersController {
         data.recipientUserName,
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -185,7 +185,7 @@ export class UsersController {
     try {
       return await this.userService.handleGetFriendRequestList(user.id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -200,11 +200,11 @@ export class UsersController {
         reciever.nickname,
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
 
-    // console.log('Reciever Username : ', reciever.nickname);
-    // console.log('Sender Username : ', senderUserame);
+    // // console.log('Reciever Username : ', reciever.nickname);
+    // // console.log('Sender Username : ', senderUserame);
   }
 
   @Delete('remove-friend/:username')
@@ -215,7 +215,7 @@ export class UsersController {
     try {
       return await this.userService.handleRemoveFriend(userName, user.id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -230,7 +230,7 @@ export class UsersController {
         sender,
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -243,7 +243,7 @@ export class UsersController {
       await this.userService.handleCancelFriendRequest(user.id, username);
       return { message: 'Friend request cancelled' };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -255,7 +255,7 @@ export class UsersController {
     try {
       return await this.userService.handleBlockUser(user.id, username);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error: error.message };
     }
   }
@@ -272,7 +272,7 @@ export class UsersController {
       );
       return publicProfile;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -284,7 +284,7 @@ export class UsersController {
     try {
       return await this.userService.handleUnblockUser(userName, blocked);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -293,7 +293,7 @@ export class UsersController {
     try {
       return this.userService.handleGetBlockedUsers();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -302,7 +302,7 @@ export class UsersController {
     try {
       return this.userService.handleGetFriendlist(user.nickname);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -311,7 +311,7 @@ export class UsersController {
     try {
       await this.userService.addToBlockedTokens(token);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -322,7 +322,7 @@ export class UsersController {
 
       return await this.userService.handleGetOtherGames(userID);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 }

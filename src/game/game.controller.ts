@@ -25,7 +25,7 @@ export class GameController {
     try {
       return await this.gameService.handleGetMyGames(user.id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 
@@ -34,7 +34,7 @@ export class GameController {
     try {
       return await this.gameService.handleGetLeaderboard();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   }
 }

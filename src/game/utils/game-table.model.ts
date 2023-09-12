@@ -110,7 +110,7 @@ export class GameManager {
   //     this.server.on('connection', (socket) => {
   //       socket.on('setUserId', (userId) => {
   //         this.socketToUserIdMap.set(socket.id, userId);
-  //         console.log(`User connected with ID: ${userId}`);
+  //         // console.log(`User connected with ID: ${userId}`);
   //       });
   //       socket.on('disconnect', () => {
   //         const userId = this.socketToUserIdMap.get(socket.id);
@@ -118,7 +118,7 @@ export class GameManager {
   //           this.handlePlayerDisconnect(userId);
   //           this.socketToUserIdMap.delete(socket.id);
   //         }
-  //         console.log(`User disconnected with ID: ${userId}`);
+  //         // console.log(`User disconnected with ID: ${userId}`);
   //       });
   //     });
   //   }
@@ -140,8 +140,8 @@ export class GameManager {
 
     // this.gameService.
 
-    // console.log(this.gameTable.player1);
-    // console.log(this.gameTable.player2);
+    // // console.log(this.gameTable.player1);
+    // // console.log(this.gameTable.player2);
 
     setTimeout(() => {
       const gameInterval = setInterval(() => {
@@ -160,7 +160,7 @@ export class GameManager {
           player1Score: this.gameTable.player1.score,
         });
 
-        // console.log(this.gameTable.player1.score);
+        // // console.log(this.gameTable.player1.score);
 
         server.to(roomName).emit('BallPositionUpdated', {
           ball: {
@@ -197,10 +197,10 @@ export class GameManager {
         : this.gameTable.player2;
 
     // if (playerId === 1) {
-    //   console.log(player);
+    //   // console.log(player);
     // }
     // if (playerId === 2) {
-    //   console.log(player);
+    //   // console.log(player);
     // }
 
     if (player.paddle) {
@@ -208,13 +208,13 @@ export class GameManager {
 
       if (targetY < 0) {
         player.paddle.y = 0;
-        // console.log(player.paddle.y);
+        // // console.log(player.paddle.y);
       } else if (targetY + PaddleHeight > canvasHeight) {
         player.paddle.y = canvasHeight - PaddleHeight;
-        // console.log(player.paddle.y);
+        // // console.log(player.paddle.y);
       } else {
         player.paddle.y = targetY;
-        // console.log(player.paddle.y);
+        // // console.log(player.paddle.y);
       }
     }
   }
@@ -225,6 +225,11 @@ export class GameManager {
       this.gameTable.player1.socketId === disconnectedPlayerId
         ? this.gameTable.player2
         : this.gameTable.player1;
+
+    this.gameService.setOnline(
+      this.gameTable.player1.id,
+      this.gameTable.player2.id,
+    );
 
     this.server.to(this.gameTable.roomName).emit('gameEnded', {
       winner: connectedPlayer.nickname,
