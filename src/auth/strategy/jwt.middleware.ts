@@ -7,8 +7,7 @@ export class JwtMiddleware implements NestMiddleware {
     const authHeader = req.headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
-      // Do something with the token, e.g., validate or decode it
-      req.token = token; // Attach the token to the request object
+      req.token = token;
     }
     next();
   }

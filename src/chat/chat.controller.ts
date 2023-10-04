@@ -2,20 +2,17 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
+  HttpException,
   Param,
   Post,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { ChatService } from './chat.service';
 import { GetUser } from 'src/auth/decorator/getUser.decorator';
 import { User } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guard';
 import { MessageInputDto } from './dto/message.dto';
-import { RemoveUserHashGuard } from 'src/auth/guard/RemoveUserHashGuard';
 
 @UseGuards(JwtGuard)
 @Controller('chat')
@@ -43,8 +40,7 @@ export class ChatController {
         return this.chatService.handleCreateRoom(userID, user.id);
       }
     } catch (error) {
-      // console.log(error);
-      return error;
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -55,8 +51,7 @@ export class ChatController {
     try {
       return await this.chatService.handleLeaveRoom(conversationId, user.id);
     } catch (error) {
-      // console.log(error);
-      return { error: error.message };
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -88,8 +83,7 @@ export class ChatController {
         );
       }
     } catch (error) {
-      res.status(HttpStatus.UNAUTHORIZED);
-      return { error: error.message };
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -98,7 +92,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetMyRooms(user.id);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -109,11 +103,9 @@ export class ChatController {
         return await this.chatService.getPublicRooms();
       } else if (roomType === 'isProtected') {
         return await this.chatService.getProtectedRooms();
-      } else if (roomType === 'isPrivate') {
-        // return await this.chatService.getPrivateRooms();
       }
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -125,7 +117,7 @@ export class ChatController {
     try {
       return await this.chatService.getOtherUser(conversationID, user);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -134,7 +126,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetMyChats(user.id);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -143,7 +135,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetRoomMessages(roomId);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -157,7 +149,7 @@ export class ChatController {
 
       return await this.chatService.handleSendMessage(user.id, RoomId, message);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -169,7 +161,7 @@ export class ChatController {
     try {
       return await this.chatService.handleGetChannelDetails(user.id, roomId);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -185,7 +177,7 @@ export class ChatController {
       const { conversationId, targetUser } = data;
       await this.chatService.handleBan(user.id, conversationId, targetUser);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -195,7 +187,7 @@ export class ChatController {
       const { conversationId, targetUser } = data;
       await this.chatService.handleKick(user.id, conversationId, targetUser);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -210,7 +202,7 @@ export class ChatController {
         updatedUser,
       );
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -225,7 +217,7 @@ export class ChatController {
         updatedUser,
       );
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -239,19 +231,7 @@ export class ChatController {
         password,
       );
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
-
-  // @Post('setadmin')
-  // async handleSetAdmin(
-  //   @Req() req: Request,
-  //   @Body() data: { roomId: number; userId: number },
-  // ) {
-  //   await this.chatService.handleSetAdmin(
-  //     data.roomId,
-  //     data.userId,
-  //     requestingUser,
-  //   );
-  // }
 }

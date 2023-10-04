@@ -17,7 +17,6 @@ export class AuthService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
-    private userService: UsersService,
   ) {}
 
   async findUser(id: number) {

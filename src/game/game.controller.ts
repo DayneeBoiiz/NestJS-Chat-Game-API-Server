@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   Inject,
   Param,
   Post,
@@ -25,7 +26,7 @@ export class GameController {
     try {
       return await this.gameService.handleGetMyGames(user.id);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -34,7 +35,7 @@ export class GameController {
     try {
       return await this.gameService.handleGetLeaderboard();
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 }

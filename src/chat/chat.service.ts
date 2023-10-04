@@ -72,7 +72,7 @@ export class ChatService {
         throw new UnauthorizedException('Only admin / owner can mute');
       }
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -126,7 +126,7 @@ export class ChatService {
         throw new UnauthorizedException('Only admin / owner can mute');
       }
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -177,7 +177,7 @@ export class ChatService {
         return updatedRoom;
       }
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -224,10 +224,8 @@ export class ChatService {
           'Only admins can set other users as admins',
         );
       }
-
-      // console.log(`user ${updatedUser} is now Admin`);
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -277,7 +275,7 @@ export class ChatService {
 
       // console.log(`user ${updatedUser} is now normal User`);
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -329,7 +327,7 @@ export class ChatService {
         );
       }
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -432,148 +430,6 @@ export class ChatService {
     }
   }
 
-  // async handleLeaveRoom(client: Socket, roomId: string, userID: number) {
-  //   const roomID = parseInt(roomId, 10);
-
-  //   try {
-  //     const room = await this.prisma.room.findUnique({
-  //       where: {
-  //         id: roomID,
-  //       },
-  //       include: {
-  //         admins: true,
-  //         owner: true,
-  //         users: true,
-  //       },
-  //     });
-
-  //     if (!room) return;
-
-  //     const isAdmin = room.admins.some((admin) => admin.id === userID);
-  //     // // console.log('isAdmin ==> ', isAdmin);
-  //     const isOwner = room.owner.id === userID;
-  //     // // console.log('isOwner ==> ', isOwner);
-
-  //     if (isAdmin || isOwner) {
-  //       let newOwnerId = null;
-
-  //       if (isOwner) {
-  //         const participants = room.users;
-  //         const currentOwnerIndex = participants.findIndex(
-  //           (participants) => participants.id === userID,
-  //         );
-  //         const nextOwnerIndex = (currentOwnerIndex + 1) % participants.length;
-  //         newOwnerId = participants[nextOwnerIndex].id;
-  //         // // console.log('newOwnerId ==> ', newOwnerId);
-  //       }
-
-  //       await this.prisma.room.update({
-  //         where: {
-  //           id: roomID,
-  //         },
-  //         data: {
-  //           admins: {
-  //             disconnect: {
-  //               id: userID,
-  //             },
-  //           },
-  //           users: {
-  //             disconnect: {
-  //               id: userID,
-  //             },
-  //           },
-  //           owner: {
-  //             connect: {
-  //               id: newOwnerId,
-  //             },
-  //           },
-  //         },
-  //       });
-
-  //       client.leave(`room:${roomID}`);
-  //       client.to(`room:${roomID}`).emit('participantLeft', client.id);
-
-  //       if (newOwnerId) {
-  //         client.to(`room:${roomId}`).emit('newOwner', newOwnerId);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     // console.log(error);
-  //   }
-  // }
-
-  // async handleDeleteRoom(client: Socket, roomId: string, server: Server) {
-  //   const roomID = parseInt(roomId, 10);
-
-  //   try {
-  //     await this.prisma.room.delete({
-  //       where: {
-  //         id: roomID,
-  //       },
-  //       include: {
-  //         messages: true,
-  //       },
-  //     });
-
-  //     server.to(`room:${roomID}`).emit('roomDeleted');
-  //   } catch (error) {
-  //     // console.log(error);
-  //   }
-  // }
-
-  // async extractUserIdFromHeader(@Req() req: Request) {
-  //   const token = req.headers.authorization;
-  //   // // console.log(token);
-
-  //   try {
-  //     const decoded = this.jwtService.verify(token.replace('Bearer ', ''));
-  //     const userId = decoded.sub;
-  //     return userId;
-  //   } catch (error) {
-  //     // console.log(error);
-  //   }
-  // }
-
-  // async extractUserId(client: Socket) {
-  //   const token = client.handshake.headers.authorization;
-
-  //   try {
-  //     const decoded = this.jwtService.verify(token.replace('bearer ', ''));
-  //     const userId = decoded.sub;
-  //     return userId;
-  //   } catch (error) {
-  //     // console.log(error);
-  //   }
-  // }
-
-  // async handleJoinRoom(client: Socket, roomId: string, userID: number) {
-  //   const roomID = parseInt(roomId, 10);
-
-  //   const chatRoom = await this.prisma.room.findUnique({
-  //     where: {
-  //       id: roomID,
-  //     },
-  //   });
-  //   if (chatRoom) {
-  //     await this.prisma.room.update({
-  //       where: {
-  //         id: roomID,
-  //       },
-  //       data: {
-  //         users: {
-  //           connect: {
-  //             id: userID,
-  //           },
-  //         },
-  //       },
-  //     });
-  //     client.join(`room:${roomID}`);
-  //     client.emit(`roomJoined`);
-  //   } else {
-  //     // console.log('Room not Found');
-  //   }
-  // }
-
   uniqueCode = () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const codeLength = 6;
@@ -655,7 +511,7 @@ export class ChatService {
 
       return room;
     } catch (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
   }
 
@@ -736,7 +592,7 @@ export class ChatService {
 
       return room;
     } catch (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
   }
 
@@ -807,7 +663,7 @@ export class ChatService {
 
       return room;
     } catch (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
   }
 
@@ -859,7 +715,7 @@ export class ChatService {
         return newRoom;
       }
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -1015,8 +871,6 @@ export class ChatService {
         seen: newMessage.seen,
       };
 
-      // the sender -> blocklist from bothsides
-      // create an array of socketIds
       this.chatGatway.server
         .to(conversationdId)
         .except([])
@@ -1029,7 +883,7 @@ export class ChatService {
 
       return newMessage;
     } catch (error) {
-      return error;
+      throw new Error(error.message);
     }
   }
 
@@ -1062,7 +916,7 @@ export class ChatService {
 
       return rooms;
     } catch (error) {
-      return error;
+      throw new Error(error.message);
     }
   }
 
@@ -1112,7 +966,7 @@ export class ChatService {
 
       return publicRooms;
     } catch (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
   }
 
@@ -1137,34 +991,9 @@ export class ChatService {
 
       return protectedRooms;
     } catch (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
   }
-
-  // async getPrivateRooms() {
-  //   try {
-  //     const privateRooms = await this.prisma.room.findMany({
-  //       where: {
-  //         isPrivate: true,
-  //       },
-  //       include: {
-  //         owner: true,
-  //         users: true,
-  //       },
-  //       orderBy: {
-  //         createdAt: 'desc',
-  //       },
-  //     });
-
-  //     if (!privateRooms) {
-  //       throw new NotFoundException('No Rooms Found');
-  //     }
-
-  //     return privateRooms;
-  //   } catch (error) {
-  //     return { error: error.message };
-  //   }
-  // }
 
   async isUserInRoom(userId: number, roomId: number): Promise<boolean> {
     const room = await this.prisma.room.findUnique({
@@ -1372,7 +1201,7 @@ export class ChatService {
 
       return myRooms;
     } catch (error) {
-      return { error: error.message };
+      throw new Error(error.message);
     }
   }
 
@@ -1414,21 +1243,6 @@ export class ChatService {
           },
         },
       });
-
-      // id: number;
-      // createdAt: string;
-      // updatedAt: string;
-      // email: string;
-      // nickname: string;
-      // hash: string;
-      // TwofaAutSecret: null | string;
-      // TwofaAutEnabled: boolean;
-      // FirstLogin: boolean;
-      // avatarUrl: string;
-      // state: string;
-      // provider: string;
-      // friendStatus: string;
-      // isChanged: boolean;
 
       const isMember = await this.isUserInRoom(userID, room.id);
 

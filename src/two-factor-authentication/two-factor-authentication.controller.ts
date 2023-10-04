@@ -24,14 +24,11 @@ export class TwoFactorAuthenticationController {
   constructor(
     private readonly twoFactorAuthService: TwoFactorAuthenticationService,
     private prisma: PrismaService,
-    private configService: ConfigService,
   ) {}
 
   @Post('Generate')
   @UseGuards(JwtGuard)
   async register(@Req() req: Request, @Res() res: Response) {
-    // // console.log(req.user);
-    // // console.log(res);
     const { otpauthUrl } =
       await this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(
         req.user,
@@ -58,8 +55,6 @@ export class TwoFactorAuthenticationController {
     });
 
     return verified;
-    // // console.log(code);
-    // // console.log(secret);
   }
 
   @Post('enable')

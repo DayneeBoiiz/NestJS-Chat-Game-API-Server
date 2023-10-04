@@ -21,7 +21,6 @@ export class TwoFactorAuthenticationService {
       this.configService.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
       secret,
     );
-    // // console.log(user);
 
     await this.prisma.user.update({
       where: {

@@ -7,7 +7,6 @@ import { Strategy_42 } from './strategy/42.strategy';
 import { SessionSerializer } from './strategy/serilzer';
 import { UsersService } from 'src/users/users.service';
 import { MainModule } from 'src/main/main.module';
-// import { GlobalModule } from 'src/global/global.module';
 
 @Module({
   imports: [JwtModule.register({}), MainModule],

@@ -104,7 +104,7 @@ export class UsersService {
       const userID = decoded.sub;
       return userID;
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -148,9 +148,6 @@ export class UsersService {
         throw new Error('Friendship not found');
       }
 
-      // // console.log(firstFriendship);
-      // // console.log(secondFriendship);
-
       await this.prisma.friend.delete({
         where: {
           id: firstFriendship.id,
@@ -167,14 +164,12 @@ export class UsersService {
 
       return { message: 'Friend removed' };
     } catch (error) {
-      // console.log(error);
-      // throw new Error('Failed to remove friend');
+      throw new Error(error.message);
     }
   }
 
   async handleRejectFriendRequest(receiverName: string, senderName: string) {
     try {
-      // Check if the friend request exists
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
           sender: {
@@ -193,14 +188,10 @@ export class UsersService {
         throw new Error('Friend request not found');
       }
 
-      // console.log(friendRequest.recipient.nickname);
-
-      // Check if the sender is actually the recipient of the friend request
       if (friendRequest.recipient.nickname === senderName) {
         throw new Error('You can only reject friend requests sent to you.');
       }
 
-      // Delete the friend request
       await this.prisma.friendRequest.delete({
         where: {
           id: friendRequest.id,
@@ -209,7 +200,7 @@ export class UsersService {
 
       return 'Friend request rejected successfully';
     } catch (error) {
-      throw new Error('Failed to reject friend request');
+      throw new Error(error.message);
     }
   }
 
@@ -225,7 +216,6 @@ export class UsersService {
         throw new Error('Recipient not found');
       }
 
-      // Check if the recipient made the friend request to the user
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
           OR: [
@@ -245,7 +235,6 @@ export class UsersService {
         throw new Error('Friend request not found');
       }
 
-      // Check if the user requested with themselves
       if (friendRequest.senderID === friendRequest.recipientID) {
         throw new Error(
           "You can't cancel a friend request you made to yourself.",
@@ -260,43 +249,12 @@ export class UsersService {
 
       return { message: 'Friend request cancelled' };
     } catch (error) {
-      throw new Error('Failed to cancel friend request');
+      throw new Error(error.message);
     }
-
-    // try {
-    //   const recipient = await this.prisma.user.findUnique({
-    //     where: {
-    //       nickname: userName,
-    //     },
-    //   });
-
-    //   const friendRequest = await this.prisma.friendRequest.findFirst({
-    //     where: {
-    //       senderID: userID,
-    //       recipientID: recipient.id,
-    //     },
-    //   });
-
-    //   if (!friendRequest) {
-    //     throw new Error('Friend request not found');
-    //   }
-
-    //   await this.prisma.friendRequest.delete({
-    //     where: {
-    //       id: friendRequest.id,
-    //     },
-    //   });
-    //   return { message: 'Friend request cancelled' };
-    // } catch (error) {
-    //   // console.log(error);
-    //   throw new Error('Failed to cancel friend request');
-    // }
   }
 
   async getUsersId(senderUserName: string, recieverUserName: string) {
     try {
-      // // console.log(senderUserName);
-      // // console.log(recieverUserName);
       const sender = await this.prisma.user.findUnique({
         where: {
           nickname: senderUserName,
@@ -315,7 +273,7 @@ export class UsersService {
 
       return { senderID: sender.id, receiverID: reciever.id };
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -326,7 +284,6 @@ export class UsersService {
         receiverName,
       );
 
-      // Check if the friend request exists
       const friendRequest = await this.prisma.friendRequest.findFirst({
         where: {
           sender: {
@@ -345,12 +302,10 @@ export class UsersService {
         throw new Error('Friend request not found');
       }
 
-      // Check if the sender is actually the recipient of the friend request
       if (friendRequest.recipient.nickname === senderName) {
         throw new Error('You can only accept friend requests sent to you.');
       }
 
-      // Create friendship records for both users
       await this.prisma.friend.createMany({
         data: [
           {
@@ -386,7 +341,6 @@ export class UsersService {
         },
       });
 
-      // Delete the friend request
       await this.prisma.friendRequest.delete({
         where: {
           id: friendRequest.id,
@@ -408,7 +362,7 @@ export class UsersService {
 
       return 'Friend request accepted successfully';
     } catch (error) {
-      throw new Error('Failed to accept friend request');
+      throw new Error(error.message);
     }
   }
 
@@ -454,10 +408,7 @@ export class UsersService {
         throw new Error('Invalid recipient');
       }
 
-      if (
-        sender.sentFriendRequests.length > 0
-        // sender.sentFriends.length > 0
-      ) {
+      if (sender.sentFriendRequests.length > 0) {
         throw new Error(
           'Friend request already sent or users are already friends',
         );
@@ -485,8 +436,7 @@ export class UsersService {
 
       return { message: 'Friend request sent' };
     } catch (error) {
-      // console.log(error);
-      throw new Error('Failed to send friend request');
+      throw new Error(error.message);
     }
   }
 
@@ -560,8 +510,6 @@ export class UsersService {
       publicProfile.friendStatus = 'friend';
     }
 
-    // // console.log(publicProfile.receivedFriendRequests);
-
     return publicProfile;
   }
 
@@ -595,7 +543,7 @@ export class UsersService {
 
       return unblockUser;
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -618,7 +566,7 @@ export class UsersService {
       const jsonData = JSON.stringify(blockedUsersData);
       return jsonData;
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -662,8 +610,7 @@ export class UsersService {
 
       return JSON.stringify(friendList);
     } catch (error) {
-      // console.log(error);
-      throw new Error('Failed to get friend list');
+      throw new Error(error.message);
     }
   }
 
@@ -701,7 +648,7 @@ export class UsersService {
 
       return { Message: 'Password Changed' };
     } catch (error) {
-      throw new Error(error);
+      throw new Error(error.message);
     }
   }
 
@@ -723,7 +670,7 @@ export class UsersService {
       });
       return { Message: 'Username Changed' };
     } catch (error) {
-      throw Error(error);
+      throw new Error(error.message);
     }
   }
 
@@ -776,8 +723,7 @@ export class UsersService {
       });
       return blockedUserRelation;
     } catch (error) {
-      // console.log(error);
-      throw new Error('Failed to block user');
+      throw new Error(error.message);
     }
   }
 
@@ -812,14 +758,6 @@ export class UsersService {
       },
     });
     return user?.receivedFriendRequests;
-
-    // id: number;
-    // sender: User;
-    // createdAt: string;
-    // updatedAt: string;
-    // senderID: number;
-    // recipientId: number;
-    // friendRequestStatus: string;
   }
 
   async updateAvatar(avatar: Express.Multer.File, user: User) {
@@ -873,56 +811,43 @@ export class UsersService {
       },
     });
 
-    // // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
-
-    //if the user has the default avatar
     if (find_user.avatarUrl === 'default_avatar.png') {
       const absolutePath = path.join(
         __dirname,
         this.config.get('DEFAULT_AVATAR_PATH'),
         user.avatarUrl,
       );
-      // // console.log(absolutePath);
       return res.sendFile(absolutePath);
-    }
-    //if the user has a custom avatar
-    else {
+    } else {
       const absolutePath = path.join(
         __dirname,
         this.config.get('AVATAR_PATH'),
         user.avatarUrl,
       );
-      // // console.log(absolutePath);
       return res.sendFile(absolutePath);
     }
   }
 
   async getPublicAvatar(user: User, res: Response) {
     try {
-      // // console.log(path.join(__dirname, this.config.get('AVATAR_PATH')));
-
       if (!user) {
         throw new NotFoundException('user not found');
       }
 
-      //if the user has the default avatar
       if (user.avatarUrl === 'default_avatar.png') {
         const absolutePath = path.join(
           __dirname,
           this.config.get('DEFAULT_AVATAR_PATH'),
           user.avatarUrl,
         );
-        // // console.log(absolutePath);
         return res.sendFile(absolutePath);
-      }
-      //if the user has a custom avatar
-      else {
+      } else {
         const absolutePath = path.join(
           __dirname,
           this.config.get('AVATAR_PATH'),
           user.avatarUrl,
         );
-        // // console.log(absolutePath);
+
         return res.sendFile(absolutePath);
       }
     } catch (error) {
@@ -944,11 +869,8 @@ export class UsersService {
 
     if (!socketExists) {
       userSockets.push(client);
-      // this.onlineState(userID);
+      this.onlineState(userID);
     }
-    // // console.log(this.userSocketsMap.get(userID));
-
-    // this.onlineState(userID);
   }
 
   removeSocket(userId: string, client: Socket) {
@@ -961,9 +883,9 @@ export class UsersService {
         sockets.splice(socketIndex, 1);
       }
 
-      // if (sockets.length === 0) {
-      //   this.offlineState(userID);
-      // }
+      if (sockets.length === 0) {
+        this.offlineState(userID);
+      }
     }
   }
 
@@ -1006,7 +928,6 @@ export class UsersService {
       if (this.userSocketsMap.has(friendID)) {
         const friendSockets = this.userSocketsMap.get(friendID);
 
-        // // console.log(friendSockets[0].id);
         if (friendSockets && friendSockets.length > 0) {
           friendSockets[0].emit('IncomingInvite', {
             sender: sender,
@@ -1017,7 +938,7 @@ export class UsersService {
 
       return false;
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -1035,7 +956,7 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 
@@ -1068,7 +989,7 @@ export class UsersService {
 
       return { matches: matchsTotal, wins: winCount, loses: loseCount };
     } catch (error) {
-      // console.log(error);
+      throw new Error(error.message);
     }
   }
 }

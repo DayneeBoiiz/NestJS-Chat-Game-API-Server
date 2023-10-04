@@ -2,9 +2,7 @@ import { Server, Socket } from 'socket.io';
 import {
   PADDLE_MOVE_SPEED,
   PaddleHeight,
-  PaddleWidth,
   canvasHeight,
-  canvasWidth,
   moveBall,
 } from './game_functions';
 import { Inject, Injectable } from '@nestjs/common';
@@ -45,14 +43,12 @@ export class Paddle {
   y!: number;
   width!: number;
   height!: number;
-  // dy!: number;
 
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
     this.width = 10;
     this.height = 100;
-    // this.dy = 0;
   }
 }
 
@@ -97,32 +93,8 @@ export class GameManager {
   ) {
     this.server = server;
 
-    // if (!this.server) {
-    //   throw new Error('Server object is not provided.');
-    // }
     this.gameTable = new GameTable();
-
-    // this.setupSocketListeners();
   }
-
-  // private setupSocketListeners() {
-  //   if (this.server) {
-  //     this.server.on('connection', (socket) => {
-  //       socket.on('setUserId', (userId) => {
-  //         this.socketToUserIdMap.set(socket.id, userId);
-  //         // console.log(`User connected with ID: ${userId}`);
-  //       });
-  //       socket.on('disconnect', () => {
-  //         const userId = this.socketToUserIdMap.get(socket.id);
-  //         if (userId) {
-  //           this.handlePlayerDisconnect(userId);
-  //           this.socketToUserIdMap.delete(socket.id);
-  //         }
-  //         // console.log(`User disconnected with ID: ${userId}`);
-  //       });
-  //     });
-  //   }
-  // }
 
   startGame(
     players: Player[],
@@ -137,11 +109,6 @@ export class GameManager {
     this.gameTable.player1.score = 0;
     this.gameTable.player2.score = 0;
     this.gameTable.roomName = roomName;
-
-    // this.gameService.
-
-    // // console.log(this.gameTable.player1);
-    // // console.log(this.gameTable.player2);
 
     setTimeout(() => {
       const gameInterval = setInterval(() => {
@@ -159,8 +126,6 @@ export class GameManager {
           player2Score: this.gameTable.player2.score,
           player1Score: this.gameTable.player1.score,
         });
-
-        // // console.log(this.gameTable.player1.score);
 
         server.to(roomName).emit('BallPositionUpdated', {
           ball: {
@@ -196,31 +161,20 @@ export class GameManager {
         ? this.gameTable.player1
         : this.gameTable.player2;
 
-    // if (playerId === 1) {
-    //   // console.log(player);
-    // }
-    // if (playerId === 2) {
-    //   // console.log(player);
-    // }
-
     if (player.paddle) {
       const targetY = player.paddle.y + paddlePosition * PADDLE_MOVE_SPEED;
 
       if (targetY < 0) {
         player.paddle.y = 0;
-        // // console.log(player.paddle.y);
       } else if (targetY + PaddleHeight > canvasHeight) {
         player.paddle.y = canvasHeight - PaddleHeight;
-        // // console.log(player.paddle.y);
       } else {
         player.paddle.y = targetY;
-        // // console.log(player.paddle.y);
       }
     }
   }
 
   handlePlayerDisconnect(disconnectedPlayerId: string) {
-    // Identify the connected player (the one who didn't disconnect)
     const connectedPlayer =
       this.gameTable.player1.socketId === disconnectedPlayerId
         ? this.gameTable.player2
@@ -235,34 +189,4 @@ export class GameManager {
       winner: connectedPlayer.nickname,
     });
   }
-
-  // private updateClients() {
-  //   // Emit updated game state to clients
-  //   this.server.to('hello').emit('gameStateUpdated', {
-  //     ball: {
-  //       x: this.gameTable.ball.x,
-  //       y: this.gameTable.ball.y,
-  //     },
-  //     player1: {
-  //       id: this.gameTable.player1.id,
-  //       paddle: {
-  //         x: this.gameTable.player1.paddle.x,
-  //         y: this.gameTable.player1.paddle.y,
-  //       },
-  //     },
-  //     player2: {
-  //       id: this.gameTable.player2.id,
-  //       paddle: {
-  //         x: this.gameTable.player2.paddle.x,
-  //         y: this.gameTable.player2.paddle.y,
-  //       },
-  //     },
-  //   });
-  // }
-
-  // getGameTable() {
-  //   return this.gameTable;
-  // }
-
-  // Other methods for handling game actions and events
 }

@@ -18,17 +18,12 @@ export class Strategy_42 extends PassportStrategy(FortyTwoStrategy) {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    // // console.log(accessToken);
-    // // console.log(refreshToken);
-    // // console.log(profile._json.image.link);
-
     const user = await this.authService.validateUser({
       email: profile._json.email,
       login: profile._json.login,
       avatrURL: profile._json.image.link,
     });
 
-    // // console.log(user);
     if (!user) {
       throw new UnauthorizedException();
     }

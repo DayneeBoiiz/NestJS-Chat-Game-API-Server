@@ -1,4 +1,4 @@
-import { Inject, forwardRef } from '@nestjs/common';
+import { HttpException, Inject, forwardRef } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -26,14 +26,12 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   async handleConnection(client: Socket) {
-    // console.log(`Client connected to MainGatway: ${client.id}`);
     const user = client.handshake.query;
     const userId = user.id;
     await this.userService.addSocket(userId as string, client);
   }
 
   async handleDisconnect(client: Socket) {
-    // console.log(`Client disconnected from MainGatway: ${client.id}`);
     const user = client.handshake.query;
     const userId = user.id;
     this.userService.removeSocket(userId as string, client);
@@ -45,7 +43,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const { recipientId, sender } = data;
       this.userService.sendInvite(recipientId, sender);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   Post,
   Req,
   Res,
@@ -21,7 +22,7 @@ export class AuthController {
     try {
       return this.authService.register(dto);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -30,8 +31,7 @@ export class AuthController {
     try {
       return this.authService.login(dto);
     } catch (error) {
-      // console.log(error);
-      return { error: error.message };
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -44,11 +44,10 @@ export class AuthController {
   handle42Redirect(@Req() req: Request, @Res() res: Response) {
     try {
       const token = req.user;
-      // // console.log(token);
       res.cookie('token', token, { httpOnly: false });
       res.redirect('/auth/success');
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 

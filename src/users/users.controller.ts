@@ -13,6 +13,7 @@ import {
   UploadedFile,
   Res,
   ForbiddenException,
+  HttpException,
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guard';
 import { UsersService } from './users.service';
@@ -76,8 +77,7 @@ export class UsersController {
 
       this.userService.updateAvatar(avatar, user);
     } catch (error) {
-      // console.log(error);
-      return { error: error.message };
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -91,7 +91,7 @@ export class UsersController {
         return this.userService.getAvatar(user, res);
       }
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -111,18 +111,16 @@ export class UsersController {
         return await this.userService.getPublicAvatar(user, res);
       }
     } catch (error) {
-      // console.log(error);
-      res.send({ error: error.message });
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
   @Get(':username/other')
   async handleGetOtherUser(@Param('username') username: string) {
     try {
-      // // console.log(username);
       return await this.userService.getOtherUser(username);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -134,8 +132,7 @@ export class UsersController {
     try {
       return await this.userService.changeUsername(user, usernamedto);
     } catch (error) {
-      // console.log(error);
-      return { error: error.message };
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -146,7 +143,7 @@ export class UsersController {
       if (!isPassValid) throw new ForbiddenException('incorrect password');
       return await this.userService.setNewPass(newpassdto, user);
     } catch (error) {
-      return error.message;
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -161,7 +158,7 @@ export class UsersController {
       delete user.TwofaAutSecret;
       return user;
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -176,7 +173,7 @@ export class UsersController {
         data.recipientUserName,
       );
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -185,7 +182,7 @@ export class UsersController {
     try {
       return await this.userService.handleGetFriendRequestList(user.id);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -200,11 +197,8 @@ export class UsersController {
         reciever.nickname,
       );
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
-
-    // // console.log('Reciever Username : ', reciever.nickname);
-    // // console.log('Sender Username : ', senderUserame);
   }
 
   @Delete('remove-friend/:username')
@@ -215,7 +209,7 @@ export class UsersController {
     try {
       return await this.userService.handleRemoveFriend(userName, user.id);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -230,7 +224,7 @@ export class UsersController {
         sender,
       );
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -243,7 +237,7 @@ export class UsersController {
       await this.userService.handleCancelFriendRequest(user.id, username);
       return { message: 'Friend request cancelled' };
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -255,8 +249,7 @@ export class UsersController {
     try {
       return await this.userService.handleBlockUser(user.id, username);
     } catch (error) {
-      // console.log(error);
-      return { error: error.message };
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -272,7 +265,7 @@ export class UsersController {
       );
       return publicProfile;
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -284,7 +277,7 @@ export class UsersController {
     try {
       return await this.userService.handleUnblockUser(userName, blocked);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -293,7 +286,7 @@ export class UsersController {
     try {
       return this.userService.handleGetBlockedUsers();
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -302,7 +295,7 @@ export class UsersController {
     try {
       return this.userService.handleGetFriendlist(user.nickname);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -311,7 +304,7 @@ export class UsersController {
     try {
       await this.userService.addToBlockedTokens(token);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 
@@ -322,7 +315,7 @@ export class UsersController {
 
       return await this.userService.handleGetOtherGames(userID);
     } catch (error) {
-      // console.log(error);
+      throw new HttpException(error.message, error.status || 500);
     }
   }
 }
