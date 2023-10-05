@@ -1,73 +1,98 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+  <a href="https://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# NestJS Chat & Game API Server
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A powerful NestJS-based API server that serves as the backend for a chat application and a Pong game server. This server provides a variety of features including authentication, user management, friend lists, blocked friends, and various types of chat rooms.
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [Authentication](#authentication)
+- [API Endpoints](#api-endpoints)
+- [WebSocket](#websocket)
+- [Contributing](#contributing)
 
-## Installation
+## Features
 
-```bash
-$ npm install
-```
+- User authentication using JWT (JSON Web Tokens).
+- User registration and management.
+- Friend lists with the ability to block friends.
+- Real-time chat with private, public, and protected chat rooms.
+- Pong game server with WebSocket support.
+- Cron jobs for periodic tasks.
 
-## Running the app
+## Prerequisites
 
-```bash
-# development
-$ npm run start
+Before you begin, ensure you have the following requirements installed:
 
-# watch mode
-$ npm run start:dev
+- Node.js and npm.
+- MongoDB or another supported database.
+- Redis for WebSocket support.
 
-# production mode
-$ npm run start:prod
-```
+## Getting Started
 
-## Test
+1. Clone this repository:
 
-```bash
-# unit tests
-$ npm run test
+   ```bash
+   git clone git@github.com:DayneeBoiiz/NestJS-Chat-Game-API-Server.git
 
-# e2e tests
-$ npm run test:e2e
+   cd NestJS-Chat-Game-API-Server
 
-# test coverage
-$ npm run test:cov
-```
+   npm install
+   ```
 
-## Support
+## Configuration
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Create a .env file in the project root directory and configure your environment variables as follows:
 
-## Stay in touch
+  ```env
+    DATABASE_URL=your_database_connection_url
+    JWT_SECRET=your_jwt_secret
+    INTRA_CLIENT_ID=your_intra_client_id
+    INTRA_CLIENT_SECRET=your_intra_client_secret
+    INTRA_CALLBACK_URL=your_intra_callback_url
+  ```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Authentication
 
-## License
+User authentication is handled using JWT (JSON Web Tokens). To authenticate, include the token in the Authorization header of your requests:
 
-Nest is [MIT licensed](LICENSE).
+  ```http
+  Authorization: Bearer your_jwt_token
+  ```
+
+## API Endpoints
+
+The server provides the following API endpoints:
+
+  - `/auth`: Authentication and registration endpoints.
+  - `/users`: : User management including friend lists and blocked friends.
+  - `/chat`: Chat room management.
+  - `/game`: Pong game server endpoints.
+
+Refer to the source code for detailed request and response formats.
+
+## WebSocket
+
+Real-time features, including chat and the Pong game, are implemented using WebSocket. WebSocket connections are established at /ws. Ensure your client application supports WebSocket connections.
+
+## Contributing
+
+Contributions are welcome! If you'd like to contribute to this project, please follow these steps:
+
+  1. Fork the repository.
+  2. Create a new branch for your feature or bug fix:
+      ```bash
+      git checkout -b feature/your-feature-name
+      ```
+  3. Commit your changes and push them to your fork:
+      ```bash
+      git commit -m 'Add some feature'
+      git push origin feature/your-feature-name
+      ```
+  4. Create a pull request on the original repository.
