@@ -30,9 +30,8 @@ A powerful NestJS-based API server that serves as the backend for a chat applica
 
 Before you begin, ensure you have the following requirements installed:
 
-- Node.js and npm.
-- MongoDB or another supported database.
-- Redis for WebSocket support.
+- Nest.js and npm.
+- PostgreSQL or another supported database.
 
 ## Getting Started
 
